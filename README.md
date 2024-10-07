@@ -30,9 +30,14 @@ This repository contains a script for performing network stress testing using bo
 - `googlesearch-python` library
 
 ## Installation
-1. Clone the repository:
+1. Clone the repository using HTTPS:
     ```bash
     git clone https://github.com/Eipi-1-pi/DDOS_for_ethernet-.git
+    cd DDOS_for_ethernet-
+    ```
+   Alternatively, you can clone using SSH:
+    ```bash
+    git clone git@github.com:Eipi-1-pi/DDOS_for_ethernet-.git
     cd DDOS_for_ethernet-
     ```
 2. Install the required dependencies:
