@@ -103,10 +103,23 @@ def display_ui():
 
         if choice == "1":
             print("Selected Ethernet-based Desktop")
+            proceed = input("Proceed with Ethernet stress test? (1 for Yes, 2 for No): ").strip()
+            if proceed == "1":
+                print("Starting Ethernet-based stress test...")
+                network_stress()
+            else:
+                continue
         elif choice == "2":
             ip_address = input("Enter the IP address to use: ").strip()
         elif choice == "3":
             print("Selected Wireless WiFi-based")
+            proceed = input("Proceed with Wireless WiFi-based stress test? (1 for Yes, 2 for No): ").strip()
+            if proceed == "1":
+                print("Starting Wireless WiFi-based stress test...")
+                # Add additional prompts or logic here if necessary
+                network_stress()
+            else:
+                continue
         elif choice == "4":
             print("Selected WiFi Spoofing")
             wifi_spoofing()
