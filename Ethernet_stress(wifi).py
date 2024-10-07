@@ -47,7 +47,7 @@ def network_stress(ip=None):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     tasks = []
-    for url in urls:
+    for url in default_urls:  # Correctly define the urls variable
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
@@ -99,25 +99,39 @@ def display_ui():
 
         choice = input("Select the method (1-8): ").strip()
         ip_address = None
-        urls = default_urls
 
         if choice == "1":
             print("Selected Ethernet-based Desktop")
+            nearby_options = ["Option1", "Option2", "Option3"]
+            print("Select a nearby device:")
+            for i, option in enumerate(nearby_options, start=1):
+                print(f"[{i}] {option}")
+            print("[4] Other (Enter MAC address or IP)")
+            device_choice = input("Select (1-4): ").strip()
+            if device_choice == "4":
+                ip_address = input("Enter the MAC address or IP address: ").strip()
             proceed = input("Proceed with Ethernet stress test? (1 for Yes, 2 for No): ").strip()
             if proceed == "1":
                 print("Starting Ethernet-based stress test...")
-                network_stress()
+                network_stress(ip_address)
             else:
                 continue
         elif choice == "2":
             ip_address = input("Enter the IP address to use: ").strip()
         elif choice == "3":
             print("Selected Wireless WiFi-based")
+            nearby_options = ["Option1", "Option2", "Option3"]
+            print("Select a nearby device:")
+            for i, option in enumerate(nearby_options, start=1):
+                print(f"[{i}] {option}")
+            print("[4] Other (Enter MAC address or IP)")
+            device_choice = input("Select (1-4): ").strip()
+            if device_choice == "4":
+                ip_address = input("Enter the MAC address or IP address: ").strip()
             proceed = input("Proceed with Wireless WiFi-based stress test? (1 for Yes, 2 for No): ").strip()
             if proceed == "1":
                 print("Starting Wireless WiFi-based stress test...")
-                # Add additional prompts or logic here if necessary
-                network_stress()
+                network_stress(ip_address)
             else:
                 continue
         elif choice == "4":
