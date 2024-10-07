@@ -5,11 +5,17 @@ import sys
 
 def install_requirements():
     """Install required packages from requirements.txt"""
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to install requirements: {e}")
 
 def update_script():
     """Pull the latest changes from the repository"""
-    subprocess.check_call(["git", "pull"])
+    try:
+        subprocess.check_call(["git", "pull"])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to update script: {e}")
 
 def detect_system():
     """Detect the operating system"""
@@ -25,35 +31,46 @@ def detect_system():
 
 def run_ethernet_stress():
     """Run the Ethernet_stress(wifi).py script"""
-    subprocess.check_call([sys.executable, "Ethernet_stress(wifi).py"])
+    try:
+        subprocess.check_call([sys.executable, "Ethernet_stress(wifi).py"])
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to run Ethernet stress test: {e}")
 
 def display_ui():
     """Display the UI with options"""
-    print("""
-     ███╗   ███╗██╗   ██╗███████╗██╗ ██████╗ █████╗ ███╗   ██╗████████╗
-     █████╗ ████║██║   ██║██╔════╝██║██╔════╝██╔══██╗████╗  ██║╚══██╔══╝
-     ██╔████╔██║██║   ██║█████╗  ██║██║     ███████║██╔██╗ ██║   ██║   
-     ██║╚██╔╝██║██║   ██║██╔══╝  ██║██║     ██╔══██║██║╚██╗██║   ██║   
-     ██║ ╚═╝ ██║╚██████╔╝██║     ██║╚██████╗██║  ██║██║ ╚████║   ██║   
-     ╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   
+    while True:
+        print("""
+         ███╗   ███╗██╗   ██╗███████╗██╗ ██████╗ █████╗ ███╗   ██╗████████╗
+         █████╗ ████║██║   ██║██╔════╝██║██╔════╝██╔══██╗████╗  ██║╚══██╔══╝
+         ██╔████╔██║██║   ██║█████╗  ██║██║     ███████║██╔██╗ ██║   ██║   
+         ██║╚██╔╝██║██║   ██║██╔══╝  ██║██║     ██╔══██║██║╚██╗██║   ██║   
+         ██║ ╚═╝ ██║╚██████╔╝██║     ██║╚██████╗██║  ██║██║ ╚████║   ██║   
+         ╚═╝     ╚═╝ ╚═════╝ ╚═╝     ╚═╝ ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝   ╚═╝   
 
-    [1] Detect System
-    [2] Update Script
-    [3] Install Requirements
-    [4] Run Ethernet Stress Test
-    """)
+        [1] Detect System
+        [2] Update Script
+        [3] Install Requirements
+        [4] Run Ethernet Stress Test
+        [5] Exit
+        """)
+
+        choice = input("Select an option (1-5): ").strip()
+
+        if choice == "1":
+            detect_system()
+        elif choice == "2":
+            update_script()
+        elif choice == "3":
+            install_requirements()
+        elif choice == "4":
+            run_ethernet_stress()
+        elif choice == "5":
+            print("Exiting...")
+            break
+        else:
+            print("Invalid option selected.")
+        
+        input("Press Enter to return to the menu...")
 
 if __name__ == "__main__":
     display_ui()
-    choice = input("Select an option (1-4): ").strip()
-
-    if choice == "1":
-        detect_system()
-    elif choice == "2":
-        update_script()
-    elif choice == "3":
-        install_requirements()
-    elif choice == "4":
-        run_ethernet_stress()
-    else:
-        print("Invalid option selected.")
