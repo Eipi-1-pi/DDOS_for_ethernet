@@ -101,7 +101,7 @@ def display_books(books):
 
 # Define functions for additional tools
 def run_asyncrone():
-    command = "asyncrone"
+    command = "/usr/local/bin/asyncrone"  # Adjust the path as necessary
     subprocess.run(command, shell=True)
 
 def run_syn_flood(target_ip):
@@ -117,7 +117,7 @@ def run_goldeneye(target_url):
     subprocess.run(command, shell=True)
 
 def run_routersploit():
-    command = "rsf"
+    command = "/usr/local/bin/rsf"  # Adjust the path as necessary
     subprocess.run(command, shell=True)
 
 def run_websploit():
@@ -129,7 +129,7 @@ def run_commix(target_url):
     subprocess.run(command, shell=True)
 
 def run_web2attack():
-    command = "web2attack"
+    command = "/usr/local/bin/web2attack"  # Adjust the path as necessary
     subprocess.run(command, shell=True)
 
 def display_ui():
