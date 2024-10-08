@@ -33,6 +33,9 @@ def install_system_dependencies():
             # Clone and install ufonet
             clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet", "sudo python3 setup.py install")
 
+            # Add UFOnet directory to system path
+            sys.path.append(os.path.join(os.getcwd(), "ufonet"))
+
             # Clone and install routersploit
             clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
 
@@ -69,6 +72,9 @@ def install_system_dependencies():
 
             # Clone and install ufonet
             clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet", "sudo python3 setup.py install")
+
+            # Add UFOnet directory to system path
+            sys.path.append(os.path.join(os.getcwd(), "ufonet"))
 
             # Clone and install routersploit
             clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
