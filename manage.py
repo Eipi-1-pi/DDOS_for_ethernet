@@ -31,7 +31,7 @@ def install_system_dependencies():
                 print(f"Failed to install commix using snap: {e}")
 
             # Clone and install ufonet
-            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet")
+            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet", "sudo python3 setup.py install")
 
             # Clone and install routersploit
             clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
@@ -68,7 +68,7 @@ def install_system_dependencies():
                 print(f"Failed to install commix using snap: {e}")
 
             # Clone and install ufonet
-            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet")
+            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet", "sudo python3 setup.py install")
 
             # Clone and install routersploit
             clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
@@ -119,6 +119,10 @@ def run_ethernet_stress():
     except subprocess.CalledProcessError as e:
         print(f"Failed to run Ethernet stress test: {e}")
 
+def run_ufo_net(target_url):
+    command = f"ufonet -a {target_url}"
+    subprocess.run(command, shell=True)
+
 def display_ui():
     """Display the UI with options"""
     while True:
@@ -135,10 +139,11 @@ def display_ui():
         [3] Install Requirements
         [4] Install System Dependencies
         [5] Run Ethernet Stress Test
-        [6] Exit
+        [6] Run UFOnet
+        [7] Exit
         """)
 
-        choice = input("Select an option (1-6): ").strip()
+        choice = input("Select an option (1-7): ").strip()
 
         if choice == "1":
             detect_system()
@@ -151,6 +156,9 @@ def display_ui():
         elif choice == "5":
             run_ethernet_stress()
         elif choice == "6":
+            target_url = input("Enter the target URL for UFOnet: ").strip()
+            run_ufo_net(target_url)
+        elif choice == "7":
             print("Exiting...")
             break
         else:
