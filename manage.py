@@ -3,8 +3,21 @@ import platform
 import subprocess
 import sys
 
+def install_system_dependencies():
+    """Install system-level dependencies"""
+    try:
+        if platform.system() == "Linux":
+            subprocess.check_call(["sudo", "apt", "update"])
+            subprocess.check_call(["sudo", "apt", "install", "-y", "hping3", "asyncrone", "ufonet", "goldeneye", "routersploit", "websploit", "commix", "web2attack"])
+        elif platform.system() == "Darwin":  # macOS
+            subprocess.check_call(["brew", "install", "hping3", "asyncrone", "ufonet", "goldeneye", "routersploit", "websploit", "commix"])
+        else:
+            print("Unsupported system for automated system-level dependency installation. Please install manually.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to install system-level dependencies: {e}")
+
 def install_requirements():
-    """Install required packages from requirements.txt"""
+    """Install required Python packages from requirements.txt"""
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"])
     except subprocess.CalledProcessError as e:
@@ -50,11 +63,12 @@ def display_ui():
         [1] Detect System
         [2] Update Script
         [3] Install Requirements
-        [4] Run Ethernet Stress Test
-        [5] Exit
+        [4] Install System Dependencies
+        [5] Run Ethernet Stress Test
+        [6] Exit
         """)
 
-        choice = input("Select an option (1-5): ").strip()
+        choice = input("Select an option (1-6): ").strip()
 
         if choice == "1":
             detect_system()
@@ -63,8 +77,10 @@ def display_ui():
         elif choice == "3":
             install_requirements()
         elif choice == "4":
-            run_ethernet_stress()
+            install_system_dependencies()
         elif choice == "5":
+            run_ethernet_stress()
+        elif choice == "6":
             print("Exiting...")
             break
         else:
