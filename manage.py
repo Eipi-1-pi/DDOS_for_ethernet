@@ -126,8 +126,14 @@ def run_ethernet_stress():
         print(f"Failed to run Ethernet stress test: {e}")
 
 def run_ufo_net(target_url):
-    command = f"ufonet -a {target_url}"
-    subprocess.run(command, shell=True)
+    # Debugging: Print current working directory and Python path
+    print("Current Working Directory:", os.getcwd())
+    print("Python Path:", sys.path)
+    try:
+        command = f"ufonet -a {target_url}"
+        subprocess.run(command, shell=True)
+    except Exception as e:
+        print(f"Error running UFOnet: {e}")
 
 def display_ui():
     """Display the UI with options"""
