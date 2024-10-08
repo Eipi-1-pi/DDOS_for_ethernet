@@ -10,6 +10,11 @@ from googlesearch import search
 import shutil
 import os
 
+# Other imports for screen capture
+import paramiko
+import cv2
+import numpy as np
+
 # List of high-traffic websites for testing
 default_urls = [
     "http://example.com", "http://example.org", "http://example.net",
@@ -128,6 +133,42 @@ def run_commix(target_url):
     command = f"commix --url={target_url}"
     subprocess.run(command, shell=True)
 
+def capture_screen(ip_address, username, password):
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(ip_address, username=username, password=password)
+
+        # Command to capture the screen and save it to a file
+        command = "import -window root screenshot.png"
+        stdin, stdout, stderr = client.exec_command(command)
+        stdout.channel.recv_exit_status()
+
+        # Download the screenshot
+        sftp = client.open_sftp()
+        sftp.get('screenshot.png', 'local_screenshot.png')
+        sftp.remove('screenshot.png')
+        sftp.close()
+        client.close()
+
+        # Display the screenshot
+        img = cv2.imread('local_screenshot.png')
+        cv2.imshow('Remote Screen', img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+    except Exception as e:
+        print(f"Error capturing screen: {e}")
+
+def check_access(ip_address, username, password):
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(ip_address, username=username, password=password)
+        client.close()
+        print("Access to the computer has been gained.")
+    except Exception as e:
+        print(f"Error: {e}")
+
 def display_ui():
     while True:
         print("""
@@ -153,10 +194,12 @@ def display_ui():
         [13] Run WebSploit
         [14] Run Commix
         [15] Control Other Computer
-        [16] Exit
+        [16] View Monitor of Other Computer
+        [17] Check Access to Other Computer
+        [18] Exit
         """)
 
-        choice = input("Select the method (1-16): ").strip()
+        choice = input("Select the method (1-18): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -250,6 +293,16 @@ def display_ui():
             command = f"ssh user@{ip_address} 'your-command-here'"
             subprocess.run(command, shell=True)
         elif choice == "16":
+            ip_address = input("Enter the IP address of the other computer: ").strip()
+            username = input("Enter the username: ").strip()
+            password = input("Enter the password: ").strip()
+            capture_screen(ip_address, username, password)
+        elif choice == "17":
+            ip_address = input("Enter the IP address of the other computer: ").strip()
+            username = input("Enter the username: ").strip()
+            password = input("Enter the password: ").strip()
+            check_access(ip_address, username, password)
+        elif choice == "18":
             print("Exiting...")
             break
         else:
