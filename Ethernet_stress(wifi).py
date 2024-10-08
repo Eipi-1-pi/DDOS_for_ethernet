@@ -12,6 +12,7 @@ import os
 import paramiko
 import cv2
 import numpy as np
+import platform
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -29,6 +30,10 @@ default_user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/89.0",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1"
 ]
+
+# Function to detect the operating system
+def detect_os():
+    return platform.system()
 
 # Web crawler function
 def web_crawler(start_url, max_depth=2):
@@ -338,4 +343,6 @@ def display_ui():
         input("Press Enter to return to the menu...")
 
 if __name__ == "__main__":
+    os_name = detect_os()
+    print(f"Detected Operating System: {os_name}")
     display_ui()
