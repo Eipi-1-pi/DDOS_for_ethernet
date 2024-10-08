@@ -8,9 +8,42 @@ def install_system_dependencies():
     try:
         if platform.system() == "Linux":
             subprocess.check_call(["sudo", "apt", "update"])
-            subprocess.check_call(["sudo", "apt", "install", "-y", "hping3", "asyncrone", "ufonet", "goldeneye", "routersploit", "websploit", "commix", "web2attack"])
+            subprocess.check_call(["sudo", "apt", "install", "-y", "hping3", "goldeneye", "websploit"])
+            
+            # Install commix using snap
+            try:
+                subprocess.check_call(["sudo", "snap", "install", "commix"])
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install commix using snap: {e}")
+            
+            # Clone and install ufonet
+            try:
+                subprocess.check_call(["git", "clone", "https://github.com/epsylon/ufonet.git"])
+                os.chdir("ufonet")
+                subprocess.check_call(["sudo", "python3", "setup.py", "install"])
+                os.chdir("..")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install ufonet: {e}")
+            
+            # Clone and install routersploit
+            try:
+                subprocess.check_call(["git", "clone", "https://github.com/threat9/routersploit.git"])
+                os.chdir("routersploit")
+                subprocess.check_call(["sudo", "python3", "setup.py", "install"])
+                os.chdir("..")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install routersploit: {e}")
+            
+            # Clone and install web2attack
+            try:
+                subprocess.check_call(["git", "clone", "https://github.com/santatic/web2attack.git"])
+                os.chdir("web2attack")
+                subprocess.check_call(["sudo", "python3", "setup.py", "install"])
+                os.chdir("..")
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install web2attack: {e}")
         elif platform.system() == "Darwin":  # macOS
-            subprocess.check_call(["brew", "install", "hping3", "asyncrone", "ufonet", "goldeneye", "routersploit", "websploit", "commix"])
+            subprocess.check_call(["brew", "install", "hping3", "goldeneye", "websploit"])
         else:
             print("Unsupported system for automated system-level dependency installation. Please install manually.")
     except subprocess.CalledProcessError as e:
