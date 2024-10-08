@@ -19,7 +19,8 @@ def clone_and_install(repo_url, directory_name, install_cmd=None):
 def install_system_dependencies():
     """Install system-level dependencies"""
     try:
-        if platform.system() == "Linux":
+        system = platform.system()
+        if system == "Linux":
             subprocess.check_call(["sudo", "apt", "update"])
             subprocess.check_call(["sudo", "apt", "install", "-y", "hping3", "goldeneye", "websploit"])
 
@@ -41,8 +42,43 @@ def install_system_dependencies():
             # Clone and install aSYNcrone
             clone_and_install("https://github.com/fatihsnsy/aSYNcrone.git", "aSYNcrone")
 
-        elif platform.system() == "Darwin":  # macOS
+        elif system == "Darwin":  # macOS
             subprocess.check_call(["brew", "install", "hping3", "goldeneye", "websploit"])
+
+        elif system == "Windows":
+            print("Please install the following dependencies manually on Windows:")
+            print("- hping3")
+            print("- goldeneye")
+            print("- websploit")
+            print("- commix")
+            print("Clone and install the following manually:")
+            print("- ufonet: https://github.com/epsylon/ufonet.git")
+            print("- routersploit: https://github.com/threat9/routersploit.git")
+            print("- web2attack: https://github.com/santatic/web2attack.git")
+            print("- aSYNcrone: https://github.com/fatihsnsy/aSYNcrone.git")
+
+        elif "Microsoft" in platform.release():  # WSL
+            subprocess.check_call(["sudo", "apt", "update"])
+            subprocess.check_call(["sudo", "apt", "install", "-y", "hping3", "goldeneye", "websploit"])
+
+            # Install commix using snap
+            try:
+                subprocess.check_call(["sudo", "snap", "install", "commix"])
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to install commix using snap: {e}")
+
+            # Clone and install ufonet
+            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet")
+
+            # Clone and install routersploit
+            clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
+
+            # Clone and install web2attack
+            clone_and_install("https://github.com/santatic/web2attack.git", "web2attack")
+
+            # Clone and install aSYNcrone
+            clone_and_install("https://github.com/fatihsnsy/aSYNcrone.git", "aSYNcrone")
+            
         else:
             print("Unsupported system for automated system-level dependency installation. Please install manually.")
     except subprocess.CalledProcessError as e:
@@ -71,6 +107,8 @@ def detect_system():
         print("System detected: Windows")
     elif system == "Darwin":
         print("System detected: macOS")
+    elif "Microsoft" in platform.release():
+        print("System detected: WSL")
     else:
         print("System detected: Unknown")
 
