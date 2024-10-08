@@ -37,6 +37,9 @@ def install_system_dependencies():
             # Clone and install web2attack
             clone_repo("https://github.com/santatic/web2attack.git", "web2attack")
 
+            # Clone and install aSYNcrone
+            clone_repo("https://github.com/fatihsnsy/aSYNcrone.git", "aSYNcrone")
+
         elif platform.system() == "Darwin":  # macOS
             subprocess.check_call(["brew", "install", "hping3", "goldeneye", "websploit"])
         else:
