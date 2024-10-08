@@ -9,8 +9,6 @@ import subprocess
 from googlesearch import search
 import shutil
 import os
-
-# Other imports for screen capture
 import paramiko
 import cv2
 import numpy as np
@@ -169,6 +167,27 @@ def check_access(ip_address, username, password):
     except Exception as e:
         print(f"Error: {e}")
 
+# Function to send the script to another computer and run it automatically
+def send_and_run_script(ip_address, username, password, local_script_path, remote_script_path):
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(ip_address, username=username, password=password)
+
+        sftp = client.open_sftp()
+        sftp.put(local_script_path, remote_script_path)
+        sftp.close()
+
+        # Run the script on the remote machine
+        command = f"python3 {remote_script_path}"
+        stdin, stdout, stderr = client.exec_command(command)
+        stdout.channel.recv_exit_status()
+
+        client.close()
+        print(f"Script sent and executed on {ip_address}")
+    except Exception as e:
+        print(f"Error sending and running script: {e}")
+
 def display_ui():
     while True:
         print("""
@@ -196,10 +215,11 @@ def display_ui():
         [15] Control Other Computer
         [16] View Monitor of Other Computer
         [17] Check Access to Other Computer
-        [18] Exit
+        [18] Send and Run Script on Another Computer
+        [19] Exit
         """)
 
-        choice = input("Select the method (1-18): ").strip()
+        choice = input("Select the method (1-19): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -303,6 +323,13 @@ def display_ui():
             password = input("Enter the password: ").strip()
             check_access(ip_address, username, password)
         elif choice == "18":
+            ip_address = input("Enter the IP address of the other computer: ").strip()
+            username = input("Enter the username: ").strip()
+            password = input("Enter the password: ").strip()
+            local_script_path = input("Enter the local path of the script: ").strip()
+            remote_script_path = input("Enter the remote path to save the script: ").strip()
+            send_and_run_script(ip_address, username, password, local_script_path, remote_script_path)
+        elif choice == "19":
             print("Exiting...")
             break
         else:
