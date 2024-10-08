@@ -3,21 +3,21 @@ import platform
 import subprocess
 import sys
 
+def clone_and_install(repo_url, directory_name, install_cmd=None):
+    if os.path.exists(directory_name):
+        print(f"{directory_name} already exists and is not an empty directory.")
+    else:
+        try:
+            subprocess.check_call(["git", "clone", repo_url])
+            if install_cmd:
+                os.chdir(directory_name)
+                subprocess.check_call(install_cmd, shell=True)
+                os.chdir("..")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to install {directory_name}: {e}")
+
 def install_system_dependencies():
     """Install system-level dependencies"""
-    def clone_repo(repo_url, directory_name, install_cmd=None):
-        if os.path.exists(directory_name):
-            print(f"{directory_name} already exists and is not an empty directory.")
-        else:
-            try:
-                subprocess.check_call(["git", "clone", repo_url])
-                if install_cmd:
-                    os.chdir(directory_name)
-                    subprocess.check_call(install_cmd, shell=True)
-                    os.chdir("..")
-            except subprocess.CalledProcessError as e:
-                print(f"Failed to install {directory_name}: {e}")
-
     try:
         if platform.system() == "Linux":
             subprocess.check_call(["sudo", "apt", "update"])
@@ -30,16 +30,16 @@ def install_system_dependencies():
                 print(f"Failed to install commix using snap: {e}")
 
             # Clone and install ufonet
-            clone_repo("https://github.com/epsylon/ufonet.git", "ufonet")
+            clone_and_install("https://github.com/epsylon/ufonet.git", "ufonet")
 
             # Clone and install routersploit
-            clone_repo("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
+            clone_and_install("https://github.com/threat9/routersploit.git", "routersploit", "sudo python3 setup.py install")
 
             # Clone and install web2attack
-            clone_repo("https://github.com/santatic/web2attack.git", "web2attack")
+            clone_and_install("https://github.com/santatic/web2attack.git", "web2attack")
 
             # Clone and install aSYNcrone
-            clone_repo("https://github.com/fatihsnsy/aSYNcrone.git", "aSYNcrone", "sudo python3 setup.py install")
+            clone_and_install("https://github.com/fatihsnsy/aSYNcrone.git", "aSYNcrone")
 
         elif platform.system() == "Darwin":  # macOS
             subprocess.check_call(["brew", "install", "hping3", "goldeneye", "websploit"])
