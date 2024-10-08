@@ -152,10 +152,11 @@ def display_ui():
         [12] Run GoldenEye
         [13] Run WebSploit
         [14] Run Commix
-        [15] Exit
+        [15] Control Other Computer
+        [16] Exit
         """)
 
-        choice = input("Select the method (1-15): ").strip()
+        choice = input("Select the method (1-16): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -242,6 +243,13 @@ def display_ui():
             print(f"Running Commix on {target_url}...")
             run_commix(target_url)
         elif choice == "15":
+            ip_address = input("Enter the IP address of the other computer: ").strip()
+            print(f"Using IP address: {ip_address} to control the other computer")
+            # Implement your control logic here
+            # Example: Send a command to the other computer
+            command = f"ssh user@{ip_address} 'your-command-here'"
+            subprocess.run(command, shell=True)
+        elif choice == "16":
             print("Exiting...")
             break
         else:
