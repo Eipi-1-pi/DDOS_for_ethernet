@@ -1,3 +1,5 @@
+import requests
+from bs4 import BeautifulSoup
 import threading
 import time
 import aiohttp
@@ -22,6 +24,25 @@ default_user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/89.0",
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1"
 ]
+
+# Web crawler function
+def web_crawler(start_url, max_depth=2):
+    visited = set()
+
+    def crawl(url, depth):
+        if depth > max_depth or url in visited:
+            return
+        visited.add(url)
+        try:
+            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)})
+            soup = BeautifulSoup(response.text, 'html.parser')
+            print(f"Crawled URL: {url}")
+            for link in soup.find_all('a', href=True):
+                crawl(link['href'], depth + 1)
+        except Exception as e:
+            print(f"Error crawling {url}: {e}")
+
+    crawl(start_url, 0)
 
 async def fetch(session, url, ip=None):
     headers = {'User-Agent': random.choice(default_user_agents)}
@@ -81,12 +102,12 @@ def display_books(books):
 def display_ui():
     while True:
         print("""
-         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████[...]
-         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══██╔[...]
-         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░██║[...]
-         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░░██║[...]
-         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░░░██║[...]
-         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░░░░╚═╝[...]
+         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░██████╗
+         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══██╔══╝
+         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░██║░░░
+         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░░██║░░░
+         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░░░██║░░░
+         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░░░╚═╝░░░
 
         [1] Ethernet-based Desktop
         [2] IP-based
@@ -96,10 +117,11 @@ def display_ui():
         [6] Connect and Stress via Relay IP
         [7] Scrape Chinese Textbooks
         [8] Stress Test a Custom URL
-        [9] Exit
+        [9] Web Crawling
+        [10] Exit
         """)
 
-        choice = input("Select the method (1-9): ").strip()
+        choice = input("Select the method (1-10): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -125,7 +147,7 @@ def display_ui():
             nearby_options = ["Option1", "Option2", "Option3"]
             print("Select a nearby device:")
             for i, option in enumerate(nearby_options, start=1):
-                print(f"[{i}] {option}")
+                print(f"[i] {option}")
             print("[4] Other (Enter MAC address or IP)")
             device_choice = input("Select (1-4): ").strip()
             if device_choice == "4":
@@ -162,6 +184,11 @@ def display_ui():
             else:
                 continue
         elif choice == "9":
+            start_url = input("Enter the start URL for web crawling: ").strip()
+            max_depth = int(input("Enter the maximum depth for web crawling: ").strip())
+            print("Starting web crawling...")
+            web_crawler(start_url, max_depth)
+        elif choice == "10":
             print("Exiting...")
             break
         else:
