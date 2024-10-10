@@ -94,7 +94,7 @@ def zero_attack(url_or_ip):
     # Buffer overflow example using pwntools
     try:
         # Example vulnerable binary
-        binary_path = './vulnerable_binary'
+        binary_path = './vulnerable_binary'  # Replace with a known vulnerable application for educational purposes
         io = process(binary_path)
 
         # Sample shellcode for demonstration
