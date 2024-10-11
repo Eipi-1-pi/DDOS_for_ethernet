@@ -200,7 +200,7 @@ def ddos_attack():
         exit("Threads count is incorrect!")
 
         if not url.__contains__("http"):
-        exit("URL doesnt contain http or https!")
+            exit("URL doesnt contain http or https!")
 
     if not url.__contains__("."):
         exit("Invalid domain!")
