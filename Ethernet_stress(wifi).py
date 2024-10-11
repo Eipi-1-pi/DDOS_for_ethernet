@@ -69,10 +69,11 @@ async def fetch(session, url, ip=None):
 async def start_flood(url, ip=None):
     async with aiohttp.ClientSession() as session:
         tasks = []
-        for _ in range 1000:  # Increase the number of asynchronous requests
+        for _ in range(1000):  # Increase the number of asynchronous requests
             task = asyncio.create_task(fetch(session, url, ip))
             tasks.append(task)
         await asyncio.gather(*tasks)
+
 
 # Network stress test
 def network_stress(ip=None, custom_urls=None):
