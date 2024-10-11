@@ -244,7 +244,7 @@ def display_ui():
         [12] Exit
         """)
 
-        choice = input("Select the method (1-12): ").strip()
+        choice = input("Select the method (1-12): ").strip() 
 
         if choice == "1":
             ip_address = input("Enter the IP address: ").strip()
