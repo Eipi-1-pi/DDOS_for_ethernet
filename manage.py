@@ -98,11 +98,33 @@ def install_requirements():
         print(f"Failed to install requirements: {e}")
 
 def update_script():
-    """Pull the latest changes from the repository"""
+    """Pull the latest changes from the repository and update all scripts"""
     try:
+        # Backup the current directory
+        backup_dir = "backup"
+        if not os.path.exists(backup_dir):
+            os.makedirs(backup_dir)
+        
+        for file in os.listdir():
+            if os.path.isfile(file):
+                os.rename(file, os.path.join(backup_dir, file))
+        
+        # Pull the latest changes
         subprocess.check_call(["git", "pull"])
+        
+        # Restore the backup if needed
+        for file in os.listdir(backup_dir):
+            os.rename(os.path.join(backup_dir, file), file)
+        
+        # Clean up
+        os.rmdir(backup_dir)
+        
     except subprocess.CalledProcessError as e:
         print(f"Failed to update script: {e}")
+        # Restore the backup in case of failure
+        for file in os.listdir(backup_dir):
+            os.rename(os.path.join(backup_dir, file), file)
+        os.rmdir(backup_dir)
 
 def detect_system():
     """Detect the operating system"""
